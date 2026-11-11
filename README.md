@@ -347,4 +347,4 @@ The project will also allow our team to demonstrate practical software developme
 
 **Repository:** GitHub
 
-**Status:** In Development 🚀
+**Status:** In Development 
