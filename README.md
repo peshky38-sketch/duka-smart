@@ -1,10 +1,10 @@
-# Matatu Route & Fare Finder
+ Matatu Route & Fare Finder
 
 ## Group 11
 
 A web application designed to help passengers find matatu routes,
 boarding and alighting stages, and estimated fares in Nairobi, Kenya.
-
+#
 ## Project Structure
 
 - frontend/ - User interface
