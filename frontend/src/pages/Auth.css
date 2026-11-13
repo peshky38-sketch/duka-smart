@@ -1,3 +1,7 @@
+body {
+  margin: 0;
+}
+
 .auth-page {
   display: flex;
   min-height: 100vh;
@@ -135,4 +139,37 @@
   color: #12805c;
   font-weight: 700;
   text-decoration: none;
+}
+
+/* phones and small screens */
+@media (max-width: 800px) {
+  .auth-page {
+    flex-direction: column;
+  }
+
+  .auth-side {
+    flex: none;
+    padding: 24px;
+  }
+
+  .auth-brand {
+    margin-bottom: 20px;
+  }
+
+  .auth-side h1 {
+    font-size: 26px;
+  }
+
+  .auth-side p {
+    font-size: 15px;
+  }
+
+  .auth-main {
+    flex: 1;
+    padding: 20px 16px;
+  }
+
+  .auth-form {
+    padding: 24px;
+  }
 }
