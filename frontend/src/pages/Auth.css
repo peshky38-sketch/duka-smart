@@ -99,6 +99,15 @@
   box-shadow: 0 0 0 3px #ddf6ea;
 }
 
+.auth-error {
+  background: #fbe0d9;
+  color: #9a2a12;
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-size: 14px;
+  margin: 0 0 16px;
+}
+
 .auth-btn {
   width: 100%;
   padding: 13px;

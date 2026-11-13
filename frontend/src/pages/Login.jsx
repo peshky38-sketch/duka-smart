@@ -5,9 +5,18 @@ import "./Auth.css";
 function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
 
   function handleSubmit(e) {
     e.preventDefault();
+
+    if (!email || !password) {
+      setError("Please enter your email and password");
+      return;
+    }
+
+    setError("");
+    // api call will go here once the backend is ready
     console.log("login", email, password);
   }
 
@@ -50,6 +59,8 @@ function Login() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
           />
+
+          {error && <p className="auth-error">{error}</p>}
 
           <button type="submit" className="auth-btn">
             Log in

@@ -8,9 +8,26 @@ function Register() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
+  const [error, setError] = useState("");
 
   function handleSubmit(e) {
     e.preventDefault();
+
+    if (!name || !shopName || !email || !password || !confirm) {
+      setError("Please fill in all the fields");
+      return;
+    }
+    if (password.length < 8) {
+      setError("Password must be at least 8 characters");
+      return;
+    }
+    if (password !== confirm) {
+      setError("Passwords do not match");
+      return;
+    }
+
+    setError("");
+    // api call will go here once the backend is ready
     console.log("register", name, shopName, email, password);
   }
 
@@ -77,6 +94,8 @@ function Register() {
             value={confirm}
             onChange={(e) => setConfirm(e.target.value)}
           />
+
+          {error && <p className="auth-error">{error}</p>}
 
           <button type="submit" className="auth-btn">
             Create account
