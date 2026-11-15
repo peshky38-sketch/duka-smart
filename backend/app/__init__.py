@@ -24,6 +24,9 @@ def create_app():
     migrate.init_app(app, db)
     jwt.init_app(app)
 
+    from app.routes.auth import auth
+    app.register_blueprint(auth)
+
     CORS(
         app,
         resources={
