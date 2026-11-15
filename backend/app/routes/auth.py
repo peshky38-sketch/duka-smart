@@ -1,7 +1,8 @@
 from flask import Blueprint, request, jsonify
 from app.models import User, Business
 from app.extensions import db
-from werkzeug.security import generate_password_hash
+from werkzeug.security import generate_password_hash, check_password_hash
+from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
 from sqlalchemy.exc import IntegrityError
 
 auth = Blueprint("auth", __name__)
@@ -87,3 +88,51 @@ def register():
         return jsonify({
             "error": "User or business details already exist"
             }), 409
+
+@auth.post("/api/login")
+def login():
+    data = request.get_json(silent=True)
+
+    if not isinstance(data, dict):
+        return jsonify({
+            "error": "Invalid JSON data"
+        }), 400
+
+    email = data.get("email")
+    password = data.get("password")
+
+    if not email or not password:
+        return jsonify({
+            "error": "All fields are required"
+        }), 400
+
+    user = User.query.filter_by(email=email).first()
+
+    if user is None:
+        return jsonify({
+            "error": "Invalid email or password"
+        }), 401
+
+    password_is_valid = check_password_hash(user.password_hash, password)
+
+    if not password_is_valid:
+        return jsonify({
+            "error": "Invalid email or password"
+        }), 401
+
+    access_token = create_access_token(identity=str(user.id))
+
+    return jsonify({
+        "message": "log in was successful",
+        "access_token": access_token,
+        "user_id": user.id,
+        "username": user.username
+    }), 200
+
+@auth.get("/api/profile")
+@jwt_required()
+def protected_endpoint():
+    user_id = get_jwt_identity()
+    return jsonify({
+        "user_id": user_id
+    }),200
