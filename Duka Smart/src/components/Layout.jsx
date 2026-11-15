@@ -1,5 +1,5 @@
 import{NavLink, Outlet} from "react-router-dom";
-import logo from "./logo.jsx";
+import Logo from "./Logo.jsx";
 import { useApp, isLow, isOut} from "../context/AppContext.jsx";
 
 const LINKS = [
@@ -19,7 +19,7 @@ export default function Layout() {
 
     return (
         <div className="app">
-               <aside>
+        <aside>
         <Logo />
         {LINKS.map(([to, icon, label]) => (
           <NavLink key={to} to={to} end={to === "/"} className={({ isActive }) => (isActive ? "active" : "")}>

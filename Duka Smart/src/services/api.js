@@ -113,3 +113,4 @@ export const api = {
 
   // dashboard (optional: the dashboard currently calculates from sales + expenses)
   getSummary: () => request("/api/dashboard/summary"),
+};
