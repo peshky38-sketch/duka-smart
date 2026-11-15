@@ -24,6 +24,17 @@ function Dashboard() {
     { id: "#1039", items: "Tea leaves, Sugar", total: 275, time: "9:21 am" },
   ];
 
+  const week = [
+    { day: "Mon", sales: 32, expenses: 14 },
+    { day: "Tue", sales: 28, expenses: 10 },
+    { day: "Wed", sales: 41, expenses: 18 },
+    { day: "Thu", sales: 36, expenses: 12 },
+    { day: "Fri", sales: 52, expenses: 20 },
+    { day: "Sat", sales: 60, expenses: 22 },
+    { day: "Sun", sales: 48, expenses: 12 },
+  ];
+  const maxValue = 60;
+
   return (
     <div className="dash">
       <aside className="sidebar">
@@ -66,6 +77,37 @@ function Dashboard() {
               <span className="stat-value">{s.value}</span>
             </div>
           ))}
+        </div>
+
+        <div className="panel chart-panel">
+          <div className="chart-head">
+            <h2>Sales and expenses this week</h2>
+            <div className="legend">
+              <span><i className="dot dot-sales"></i>Sales</span>
+              <span><i className="dot dot-expenses"></i>Expenses</span>
+            </div>
+          </div>
+
+          <div className="chart">
+            {week.map((d) => (
+              <div className="chart-day" key={d.day}>
+                <div className="bars">
+                  <div
+                    className="bar bar-sales"
+                    style={{ height: (d.sales / maxValue) * 100 + "%" }}
+                    title={"Sales: KES " + d.sales + "k"}
+                  ></div>
+                  <div
+                    className="bar bar-expenses"
+                    style={{ height: (d.expenses / maxValue) * 100 + "%" }}
+                    title={"Expenses: KES " + d.expenses + "k"}
+                  ></div>
+                </div>
+                <span className="chart-label">{d.day}</span>
+              </div>
+            ))}
+          </div>
+          <p className="chart-note">KES thousands</p>
         </div>
 
         <div className="dash-row">

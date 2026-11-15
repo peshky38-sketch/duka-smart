@@ -170,14 +170,10 @@ body {
   border-bottom: none;
 }
 
-.alert-item span {
+.alert-item div span {
   display: block;
   font-size: 13px;
   color: #52736a;
-}
-
-.alert-item .tag {
-  display: inline-block;
 }
 
 .tag {
@@ -214,4 +210,83 @@ th {
 td {
   padding: 11px 6px;
   border-bottom: 1px solid #e4f2ea;
+}
+
+/* weekly chart */
+.chart-panel {
+  margin-top: 16px;
+}
+
+.chart-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.legend {
+  display: flex;
+  gap: 16px;
+  font-size: 13px;
+  color: #52736a;
+}
+
+.dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  margin-right: 6px;
+}
+
+.dot-sales,
+.bar-sales {
+  background: #3eb489;
+}
+
+.dot-expenses,
+.bar-expenses {
+  background: #f2a93b;
+}
+
+.chart {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  height: 220px;
+  padding: 10px 10px 0;
+  border-bottom: 1px solid #e4f2ea;
+}
+
+.chart-day {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 100%;
+  flex: 1;
+}
+
+.bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+  flex: 1;
+  width: 100%;
+  justify-content: center;
+}
+
+.bar {
+  width: 22px;
+  border-radius: 5px 5px 0 0;
+}
+
+.chart-label {
+  font-size: 13px;
+  color: #52736a;
+  padding: 8px 0;
+}
+
+.chart-note {
+  margin: 8px 0 0;
+  font-size: 12px;
+  color: #52736a;
 }
