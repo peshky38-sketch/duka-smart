@@ -1,0 +1,112 @@
+import { createContext, useContext, useEffect, useState } from "react";
+import { PRODUCTS, SALES, EXPENSES } from "../data/mock";
+import { api, USE_API } from "../services/api";
+import { sum } from "../utils";
+
+const Ctx = createContext();
+export const useApp = () => useContext(Ctx);
+
+// Business rules from the project doc
+export const isOut = (p) => p.qty === 0;
+export const isLow = (p) => p.qty > 0 && p.qty <= p.minStock; // less than or equal to minimum
+
+export function AppProvider({ children }) {
+  const [user, setUser] = useState(() => JSON.parse(localStorage.getItem("user") || "null"));
+  const [products, setProducts] = useState(USE_API ? [] : PRODUCTS);
+  const [sales, setSales] = useState(USE_API ? [] : SALES);
+  const [expenses, setExpenses] = useState(USE_API ? [] : EXPENSES);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  // Load everything from the backend once the user is logged in
+  useEffect(() => {
+    if (!USE_API || !user) return;
+    setLoading(true);
+    Promise.all([api.getProducts(), api.getSales(), api.getExpenses()])
+      .then(([p, s, e]) => { setProducts(p); setSales(s); setExpenses(e); setError(""); })
+      .catch((err) => setError(err.message))
+      .finally(() => setLoading(false));
+  }, [user]);
+
+  // ---------- auth ----------
+  const startSession = (u) => { localStorage.setItem("user", JSON.stringify(u)); setUser(u); };
+
+  const login = async (email, password) => {
+    if (!USE_API) return startSession({ name: "Wanjiru", shop: "Mama Wanjiru Stores", email });
+    startSession(await api.login(email, password));
+  };
+  const register = async (f) => {
+    if (!USE_API) return startSession({ name: f.name, shop: f.shop, email: f.email });
+    await api.register(f);
+    await login(f.email, f.password);
+  };
+  const logout = () => {
+    localStorage.removeItem("user");
+    localStorage.removeItem("token");
+    setUser(null);
+  };
+
+  // ---------- products ----------
+  const saveProduct = async (p) => {
+    if (USE_API) {
+      const saved = p.id ? await api.updateProduct(p.id, p) : await api.createProduct(p);
+      setProducts((l) => (p.id ? l.map((x) => (x.id === saved.id ? saved : x)) : [...l, saved]));
+      return;
+    }
+    setProducts((l) => (p.id ? l.map((x) => (x.id === p.id ? p : x)) : [...l, { ...p, id: Date.now() }]));
+  };
+  const deleteProduct = async (id) => {
+    if (USE_API) await api.deleteProduct(id);
+    setProducts((l) => l.filter((x) => x.id !== id));
+  };
+
+  // ---------- sales: lines = [{ id, qty }] ----------
+  const completeSale = async (lines, method) => {
+    if (USE_API) {
+      const sale = await api.createSale(lines, method);
+      // the backend already reduced the stock, so reload both
+      const [p, s] = await Promise.all([api.getProducts(), api.getSales()]);
+      setProducts(p);
+      setSales(s);
+      return sale;
+    }
+    const items = lines.map((l) => {
+      const p = products.find((x) => x.id === l.id);
+      return { id: p.id, name: p.name, emoji: p.emoji, qty: l.qty, price: p.price, cost: p.cost };
+    });
+    const sale = {
+      id: Math.max(0, ...sales.map((s) => s.id)) + 1,
+      method,
+      date: new Date().toISOString(),
+      items,
+      total: sum(items, (i) => i.price * i.qty),
+    };
+    setProducts((l) => l.map((p) => {
+      const it = items.find((i) => i.id === p.id);
+      return it ? { ...p, qty: p.qty - it.qty } : p;
+    }));
+    setSales((s) => [sale, ...s]);
+    return sale;
+  };
+
+  // ---------- expenses ----------
+  const addExpense = async (e) => {
+    if (USE_API) {
+      const saved = await api.createExpense(e);
+      setExpenses((l) => [saved, ...l]);
+      return;
+    }
+    setExpenses((l) => [{ ...e, id: Date.now() }, ...l]);
+  };
+
+  return (
+    <Ctx.Provider value={{
+      user, login, register, logout, loading, error,
+      products, saveProduct, deleteProduct,
+      sales, completeSale,
+      expenses, addExpense,
+    }}>
+      {children}
+    </Ctx.Provider>
+  );
+}
