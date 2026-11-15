@@ -10,6 +10,20 @@ function Dashboard() {
     { label: "Estimated profit", value: "KES 35,850" },
   ];
 
+  const lowStock = [
+    { name: "Sugar 1kg", left: 4, reorder: 25 },
+    { name: "Unga Jogoo 2kg", left: 7, reorder: 20 },
+    { name: "Cooking oil 1L", left: 3, reorder: 15 },
+    { name: "Bar soap", left: 0, reorder: 30 },
+  ];
+
+  const recentSales = [
+    { id: "#1042", items: "Sugar, Unga, Milk", total: 640, time: "10:42 am" },
+    { id: "#1041", items: "Cooking oil, Rice", total: 880, time: "10:15 am" },
+    { id: "#1040", items: "Bread, Eggs", total: 310, time: "9:50 am" },
+    { id: "#1039", items: "Tea leaves, Sugar", total: 275, time: "9:21 am" },
+  ];
+
   return (
     <div className="dash">
       <aside className="sidebar">
@@ -52,6 +66,47 @@ function Dashboard() {
               <span className="stat-value">{s.value}</span>
             </div>
           ))}
+        </div>
+
+        <div className="dash-row">
+          <div className="panel">
+            <h2>Low stock alerts</h2>
+            {lowStock.map((p) => (
+              <div className="alert-item" key={p.name}>
+                <div>
+                  <strong>{p.name}</strong>
+                  <span>Reorder at {p.reorder}</span>
+                </div>
+                <span className={p.left === 0 ? "tag tag-out" : "tag tag-low"}>
+                  {p.left === 0 ? "Out of stock" : p.left + " left"}
+                </span>
+              </div>
+            ))}
+          </div>
+
+          <div className="panel">
+            <h2>Recent sales</h2>
+            <table>
+              <thead>
+                <tr>
+                  <th>Sale</th>
+                  <th>Items</th>
+                  <th>Total</th>
+                  <th>Time</th>
+                </tr>
+              </thead>
+              <tbody>
+                {recentSales.map((s) => (
+                  <tr key={s.id}>
+                    <td>{s.id}</td>
+                    <td>{s.items}</td>
+                    <td>KES {s.total}</td>
+                    <td>{s.time}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       </main>
     </div>
