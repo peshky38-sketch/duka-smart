@@ -166,3 +166,30 @@ tr.clickable:hover {
 .page-number {
   margin: 0 12px;
 }
+
+/* phones */
+@media (max-width: 900px) {
+  .trans-stats {
+    grid-template-columns: 1fr;
+    max-width: none;
+  }
+
+  .filters {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .filters input[type="text"] {
+    min-width: 0;
+  }
+
+  .date-filter input {
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .pagination {
+    flex-direction: column;
+    gap: 10px;
+  }
+}
