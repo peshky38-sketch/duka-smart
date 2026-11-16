@@ -232,3 +232,7 @@
     flex-shrink: 0;
   }
 }
+
+.pay-btn {
+  white-space: nowrap;
+}
