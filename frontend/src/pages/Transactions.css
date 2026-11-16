@@ -193,3 +193,11 @@ tr.clickable:hover {
     gap: 10px;
   }
 }
+
+/* 16px inputs so iPhones do not zoom in when you tap a field */
+@media (max-width: 900px) {
+  .filters input,
+  .filters select {
+    font-size: 16px;
+  }
+}

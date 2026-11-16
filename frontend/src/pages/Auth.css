@@ -173,3 +173,10 @@ body {
     padding: 24px;
   }
 }
+
+/* 16px inputs so iPhones do not zoom in when you tap a field */
+@media (max-width: 800px) {
+  .auth-form input {
+    font-size: 16px;
+  }
+}

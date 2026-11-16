@@ -129,3 +129,12 @@
     grid-column: auto;
   }
 }
+
+/* 16px inputs so iPhones do not zoom in when you tap a field */
+@media (max-width: 900px) {
+  .expense-fields input,
+  .expense-fields select,
+  .filter-row select {
+    font-size: 16px;
+  }
+}

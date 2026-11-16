@@ -206,3 +206,13 @@
     padding: 20px;
   }
 }
+
+/* 16px inputs so iPhones do not zoom in when you tap a field */
+@media (max-width: 900px) {
+  .toolbar input,
+  .toolbar select,
+  .form-grid input,
+  .form-grid select {
+    font-size: 16px;
+  }
+}
