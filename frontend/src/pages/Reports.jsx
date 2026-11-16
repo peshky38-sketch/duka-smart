@@ -98,6 +98,9 @@ function Reports() {
   const expenses = sum(d.expenses);
   const netProfit = grossProfit - expenses;
 
+  // the tallest bar decides how tall the others are
+  const maxValue = Math.max(...d.sales, ...d.expenses);
+
   return (
     <div className="dash">
       <Sidebar active="Reports" />
@@ -143,6 +146,37 @@ function Reports() {
             </span>
             <span className="stat-note">Gross profit minus expenses</span>
           </div>
+        </div>
+
+        <div className="panel chart-panel">
+          <div className="chart-head">
+            <h2>Sales and expenses</h2>
+            <div className="legend">
+              <span><i className="dot dot-sales"></i>Sales</span>
+              <span><i className="dot dot-expenses"></i>Expenses</span>
+            </div>
+          </div>
+
+          <div className="chart">
+            {d.labels.map((label, i) => (
+              <div className="chart-day" key={label}>
+                <div className="bars">
+                  <div
+                    className="bar bar-sales"
+                    style={{ height: (d.sales[i] / maxValue) * 100 + "%" }}
+                    title={"Sales: KES " + d.sales[i]}
+                  ></div>
+                  <div
+                    className="bar bar-expenses"
+                    style={{ height: (d.expenses[i] / maxValue) * 100 + "%" }}
+                    title={"Expenses: KES " + d.expenses[i]}
+                  ></div>
+                </div>
+                <span className="chart-label">{label}</span>
+              </div>
+            ))}
+          </div>
+          <p className="chart-note">Tallest bar is KES {maxValue}. Hover a bar to see its amount.</p>
         </div>
       </main>
     </div>
