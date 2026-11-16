@@ -187,3 +187,22 @@
   font-weight: 700;
   cursor: pointer;
 }
+
+/* phones */
+@media (max-width: 900px) {
+  .toolbar {
+    flex-direction: column;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .form-grid .full {
+    grid-column: auto;
+  }
+
+  .modal {
+    padding: 20px;
+  }
+}
