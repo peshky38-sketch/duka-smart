@@ -22,6 +22,78 @@ function Inventory() {
 
   const categories = ["Groceries", "Household", "Dairy", "Bakery"];
 
+  const emptyForm = {
+    name: "",
+    sku: "",
+    category: "Groceries",
+    supplier: "",
+    buying: "",
+    selling: "",
+    quantity: "",
+    threshold: "",
+  };
+
+  const [showForm, setShowForm] = useState(false);
+  const [form, setForm] = useState(emptyForm);
+  const [editingId, setEditingId] = useState(null);
+  const [formError, setFormError] = useState("");
+  const [deleteId, setDeleteId] = useState(null);
+
+  function openAdd() {
+    setForm(emptyForm);
+    setEditingId(null);
+    setFormError("");
+    setShowForm(true);
+  }
+
+  function openEdit(p) {
+    setForm({ ...p });
+    setEditingId(p.id);
+    setFormError("");
+    setShowForm(true);
+  }
+
+  function handleChange(e) {
+    setForm({ ...form, [e.target.name]: e.target.value });
+  }
+
+  function handleSave(e) {
+    e.preventDefault();
+
+    if (!form.name || !form.sku || !form.supplier) {
+      setFormError("Please fill in the name, SKU and supplier");
+      return;
+    }
+    if (form.buying === "" || form.selling === "" || form.quantity === "" || form.threshold === "") {
+      setFormError("Please fill in the prices and quantities");
+      return;
+    }
+    if (Number(form.selling) < Number(form.buying)) {
+      setFormError("Selling price is lower than the buying price");
+      return;
+    }
+
+    const product = {
+      ...form,
+      buying: Number(form.buying),
+      selling: Number(form.selling),
+      quantity: Number(form.quantity),
+      threshold: Number(form.threshold),
+    };
+
+    if (editingId) {
+      setProducts(products.map((p) => (p.id === editingId ? { ...product, id: editingId } : p)));
+    } else {
+      setProducts([...products, { ...product, id: Date.now() }]);
+    }
+    setShowForm(false);
+  }
+
+  function handleDelete() {
+    setProducts(products.filter((p) => p.id !== deleteId));
+    setDeleteId(null);
+  }
+
   function getStatus(p) {
     if (p.quantity === 0) return "out";
     if (p.quantity <= p.threshold) return "low";
@@ -51,7 +123,7 @@ function Inventory() {
             <h1>Inventory</h1>
             <p className="dash-sub">Manage your products and stock levels</p>
           </div>
-          <button className="add-btn">+ Add product</button>
+          <button className="add-btn" onClick={openAdd}>+ Add product</button>
         </div>
 
         <div className="stat-grid">
@@ -111,6 +183,7 @@ function Inventory() {
                 <th>Selling price</th>
                 <th>Quantity</th>
                 <th>Status</th>
+                <th></th>
               </tr>
             </thead>
             <tbody>
@@ -132,6 +205,12 @@ function Inventory() {
                       {getStatus(p) === "out" && "Out of stock"}
                     </span>
                   </td>
+                  <td className="row-actions">
+                    <button onClick={() => openEdit(p)}>Edit</button>
+                    <button className="danger" onClick={() => setDeleteId(p.id)}>
+                      Delete
+                    </button>
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -141,6 +220,81 @@ function Inventory() {
           )}
         </div>
       </main>
+
+      {showForm && (
+        <div className="overlay" onClick={() => setShowForm(false)}>
+          <form
+            className="modal"
+            onClick={(e) => e.stopPropagation()}
+            onSubmit={handleSave}
+          >
+            <h2>{editingId ? "Edit product" : "Add product"}</h2>
+
+            <div className="form-grid">
+              <div className="full">
+                <label>Product name</label>
+                <input name="name" value={form.name} onChange={handleChange} />
+              </div>
+              <div>
+                <label>SKU</label>
+                <input name="sku" value={form.sku} onChange={handleChange} />
+              </div>
+              <div>
+                <label>Category</label>
+                <select name="category" value={form.category} onChange={handleChange}>
+                  {categories.map((c) => (
+                    <option key={c} value={c}>{c}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="full">
+                <label>Supplier</label>
+                <input name="supplier" value={form.supplier} onChange={handleChange} />
+              </div>
+              <div>
+                <label>Buying price (KES)</label>
+                <input name="buying" type="number" min="0" value={form.buying} onChange={handleChange} />
+              </div>
+              <div>
+                <label>Selling price (KES)</label>
+                <input name="selling" type="number" min="0" value={form.selling} onChange={handleChange} />
+              </div>
+              <div>
+                <label>Quantity</label>
+                <input name="quantity" type="number" min="0" value={form.quantity} onChange={handleChange} />
+              </div>
+              <div>
+                <label>Low stock alert at</label>
+                <input name="threshold" type="number" min="0" value={form.threshold} onChange={handleChange} />
+              </div>
+            </div>
+
+            {formError && <p className="auth-error">{formError}</p>}
+
+            <div className="modal-buttons">
+              <button type="button" className="cancel-btn" onClick={() => setShowForm(false)}>
+                Cancel
+              </button>
+              <button type="submit" className="add-btn">Save product</button>
+            </div>
+          </form>
+        </div>
+      )}
+
+      {deleteId && (
+        <div className="overlay" onClick={() => setDeleteId(null)}>
+          <div className="modal small" onClick={(e) => e.stopPropagation()}>
+            <h2>Delete product?</h2>
+            <p>This will remove the product from your inventory.</p>
+            <div className="modal-buttons">
+              <button className="cancel-btn" onClick={() => setDeleteId(null)}>
+                Cancel
+              </button>
+              <button className="delete-btn" onClick={handleDelete}>Delete</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
