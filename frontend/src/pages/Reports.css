@@ -33,3 +33,39 @@
 .loss {
   color: #9a2a12;
 }
+
+.line-chart {
+  width: 100%;
+  height: auto;
+  margin-top: 8px;
+}
+
+.zero-line {
+  stroke: #cfe6da;
+  stroke-width: 1;
+  stroke-dasharray: 4 4;
+}
+
+.profit-line {
+  fill: none;
+  stroke: #12805c;
+  stroke-width: 3;
+  stroke-linejoin: round;
+}
+
+.dot-up {
+  fill: #12805c;
+  stroke: white;
+  stroke-width: 2;
+}
+
+.dot-down {
+  fill: #d9482b;
+  stroke: white;
+  stroke-width: 2;
+}
+
+.axis-text {
+  font-size: 12px;
+  fill: #52736a;
+}

@@ -101,6 +101,26 @@ function Reports() {
   // the tallest bar decides how tall the others are
   const maxValue = Math.max(...d.sales, ...d.expenses);
 
+  // profit for each day / week / month, for the line chart
+  const profits = d.sales.map((sale, i) => sale - d.cost[i] - d.expenses[i]);
+  const top = Math.max(...profits, 0);
+  const bottom = Math.min(...profits, 0);
+  const chartWidth = 600;
+  const chartHeight = 200;
+  const padding = 30;
+
+  function getX(i) {
+    if (profits.length === 1) return chartWidth / 2;
+    return padding + (i * (chartWidth - padding * 2)) / (profits.length - 1);
+  }
+
+  function getY(value) {
+    const range = top - bottom || 1;
+    return padding + ((top - value) * (chartHeight - padding * 2)) / range;
+  }
+
+  const points = profits.map((p, i) => getX(i) + "," + getY(p)).join(" ");
+
   return (
     <div className="dash">
       <Sidebar active="Reports" />
@@ -177,6 +197,43 @@ function Reports() {
             ))}
           </div>
           <p className="chart-note">Tallest bar is KES {maxValue}. Hover a bar to see its amount.</p>
+        </div>
+
+        <div className="panel chart-panel">
+          <div className="chart-head">
+            <h2>Net profit</h2>
+            <div className="legend">
+              <span><i className="dot dot-sales"></i>Profit after costs and expenses</span>
+            </div>
+          </div>
+
+          <svg className="line-chart" viewBox={"0 0 " + chartWidth + " " + chartHeight}>
+            <line
+              x1={padding}
+              x2={chartWidth - padding}
+              y1={getY(0)}
+              y2={getY(0)}
+              className="zero-line"
+            />
+            <text x={padding} y={getY(0) - 6} className="axis-text">KES 0</text>
+            <polyline points={points} className="profit-line" />
+            {profits.map((p, i) => (
+              <g key={d.labels[i]}>
+                <circle
+                  cx={getX(i)}
+                  cy={getY(p)}
+                  r="5"
+                  className={p >= 0 ? "dot-up" : "dot-down"}
+                >
+                  <title>{d.labels[i] + ": KES " + p}</title>
+                </circle>
+                <text x={getX(i)} y={chartHeight - 6} textAnchor="middle" className="axis-text">
+                  {d.labels[i]}
+                </text>
+              </g>
+            ))}
+          </svg>
+          <p className="chart-note">Dots below the line mean a loss for that {period === "year" ? "month" : period === "month" ? "week" : "day"}.</p>
         </div>
       </main>
     </div>
