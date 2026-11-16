@@ -1,10 +1,11 @@
+import { useState } from "react";
 import Sidebar from "../components/Sidebar";
 import "./Dashboard.css";
 import "./Inventory.css";
 
 function Inventory() {
   // sample products for now, will come from the api later
-  const products = [
+  const [products, setProducts] = useState([
     { id: 1, name: "Sugar 1kg", sku: "SUG-001", category: "Groceries", supplier: "Baraka Foods", buying: 150, selling: 180, quantity: 4, threshold: 25 },
     { id: 2, name: "Unga Jogoo 2kg", sku: "UNG-002", category: "Groceries", supplier: "Baraka Foods", buying: 190, selling: 220, quantity: 7, threshold: 20 },
     { id: 3, name: "Cooking oil 1L", sku: "OIL-003", category: "Groceries", supplier: "Mwananchi Traders", buying: 260, selling: 310, quantity: 3, threshold: 15 },
@@ -13,13 +14,27 @@ function Inventory() {
     { id: 6, name: "Bread (white)", sku: "BRD-006", category: "Bakery", supplier: "Daily Bakers", buying: 55, selling: 65, quantity: 22, threshold: 10 },
     { id: 7, name: "Eggs (tray)", sku: "EGG-007", category: "Dairy", supplier: "Fresh Dairy Ltd", buying: 380, selling: 450, quantity: 12, threshold: 5 },
     { id: 8, name: "Tea leaves 250g", sku: "TEA-008", category: "Groceries", supplier: "Baraka Foods", buying: 85, selling: 110, quantity: 35, threshold: 15 },
-  ];
+  ]);
+
+  const [search, setSearch] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState("all");
+  const [statusFilter, setStatusFilter] = useState("all");
+
+  const categories = ["Groceries", "Household", "Dairy", "Bakery"];
 
   function getStatus(p) {
     if (p.quantity === 0) return "out";
     if (p.quantity <= p.threshold) return "low";
     return "in";
   }
+
+  const shown = products.filter((p) => {
+    const text = (p.name + " " + p.sku).toLowerCase();
+    if (search && !text.includes(search.toLowerCase())) return false;
+    if (categoryFilter !== "all" && p.category !== categoryFilter) return false;
+    if (statusFilter !== "all" && getStatus(p) !== statusFilter) return false;
+    return true;
+  });
 
   const total = products.length;
   const inStock = products.filter((p) => getStatus(p) === "in").length;
@@ -58,6 +73,33 @@ function Inventory() {
           </div>
         </div>
 
+        <div className="toolbar">
+          <input
+            type="text"
+            placeholder="Search by name or SKU"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+          <select
+            value={categoryFilter}
+            onChange={(e) => setCategoryFilter(e.target.value)}
+          >
+            <option value="all">All categories</option>
+            {categories.map((c) => (
+              <option key={c} value={c}>{c}</option>
+            ))}
+          </select>
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+          >
+            <option value="all">All stock levels</option>
+            <option value="in">In stock</option>
+            <option value="low">Low stock</option>
+            <option value="out">Out of stock</option>
+          </select>
+        </div>
+
         <div className="panel table-panel">
           <table>
             <thead>
@@ -72,7 +114,7 @@ function Inventory() {
               </tr>
             </thead>
             <tbody>
-              {products.map((p) => (
+              {shown.map((p) => (
                 <tr key={p.id}>
                   <td>
                     <strong>{p.name}</strong>
@@ -94,6 +136,9 @@ function Inventory() {
               ))}
             </tbody>
           </table>
+          {shown.length === 0 && (
+            <p className="empty">No products match your search.</p>
+          )}
         </div>
       </main>
     </div>
