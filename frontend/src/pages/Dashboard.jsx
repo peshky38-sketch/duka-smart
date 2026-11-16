@@ -1,4 +1,4 @@
-import logo from "../assets/logo.svg";
+import Sidebar from "../components/Sidebar";
 import "./Dashboard.css";
 
 function Dashboard() {
@@ -37,23 +37,7 @@ function Dashboard() {
 
   return (
     <div className="dash">
-      <aside className="sidebar">
-        <div className="sidebar-brand">
-          <img src={logo} alt="DukaSmart logo" width="36" height="36" />
-          <span className="brand-name">
-            Duka<span className="brand-light">Smart</span>
-          </span>
-        </div>
-
-        <nav className="sidebar-links">
-          <a href="/dashboard" className="active">Dashboard</a>
-          <a href="/inventory">Inventory</a>
-          <a href="/sales">Sales</a>
-          <a href="/expenses">Expenses</a>
-        </nav>
-
-        <a href="/login" className="sidebar-logout">Log out</a>
-      </aside>
+      <Sidebar active="Dashboard" />
 
       <main className="dash-main">
         <div className="dash-top">
