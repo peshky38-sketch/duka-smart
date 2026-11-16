@@ -268,3 +268,25 @@ td {
     overflow-x: auto;
   }
 }
+
+/* small phones */
+@media (max-width: 480px) {
+  .chart-head {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+
+  .stat-card {
+    padding: 16px;
+  }
+
+  .stat-value {
+    font-size: 20px;
+  }
+
+  .dash-top h1 {
+    font-size: 24px;
+  }
+}
