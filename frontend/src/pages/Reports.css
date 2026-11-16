@@ -285,3 +285,10 @@
     break-inside: avoid;
   }
 }
+
+/* easier to tap on a phone */
+@media (max-width: 900px) {
+  .period-tabs button {
+    padding: 12px 18px;
+  }
+}

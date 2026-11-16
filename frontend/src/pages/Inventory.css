@@ -216,3 +216,15 @@
     font-size: 16px;
   }
 }
+
+/* easier to tap on a phone */
+@media (max-width: 900px) {
+  .row-actions button {
+    padding: 12px 10px;
+  }
+
+  .toolbar input,
+  .toolbar select {
+    padding: 13px 14px;
+  }
+}

@@ -209,3 +209,20 @@
     font-size: 16px;
   }
 }
+
+/* easier to tap on a phone */
+@media (max-width: 900px) {
+  .qty button {
+    width: 38px;
+    height: 38px;
+  }
+
+  .remove {
+    width: 38px;
+    height: 38px;
+  }
+
+  .pay-btn {
+    padding: 14px 10px;
+  }
+}

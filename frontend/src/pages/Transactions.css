@@ -201,3 +201,19 @@ tr.clickable:hover {
     font-size: 16px;
   }
 }
+
+/* easier to tap on a phone */
+@media (max-width: 900px) {
+  .type-tabs button {
+    padding: 12px 20px;
+  }
+
+  .pagination button {
+    padding: 11px 18px;
+  }
+
+  .filters input,
+  .filters select {
+    padding: 13px 12px;
+  }
+}

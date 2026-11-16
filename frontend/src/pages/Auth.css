@@ -180,3 +180,15 @@ body {
     font-size: 16px;
   }
 }
+
+/* easier to tap on a phone */
+@media (max-width: 800px) {
+  .auth-switch a {
+    display: inline-block;
+    padding: 10px 6px;
+  }
+
+  .auth-btn {
+    padding: 15px;
+  }
+}

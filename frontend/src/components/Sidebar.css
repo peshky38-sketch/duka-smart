@@ -84,3 +84,11 @@
     white-space: nowrap;
   }
 }
+
+/* easier to tap on a phone */
+@media (max-width: 900px) {
+  .sidebar-links a,
+  .sidebar-logout {
+    padding: 11px 14px;
+  }
+}
