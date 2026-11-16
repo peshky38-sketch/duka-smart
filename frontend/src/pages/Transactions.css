@@ -1,0 +1,27 @@
+.table-panel {
+  margin-top: 16px;
+  overflow-x: auto;
+}
+
+.time {
+  display: block;
+  font-size: 12px;
+  color: #52736a;
+}
+
+.tag-in {
+  background: #ddf6ea;
+  color: #0b6b4b;
+}
+
+.money-in {
+  color: #0b6b4b;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.money-out {
+  color: #9a2a12;
+  font-weight: 700;
+  white-space: nowrap;
+}
