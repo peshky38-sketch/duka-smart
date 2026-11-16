@@ -119,6 +119,21 @@ function Reports() {
     return padding + ((top - value) * (chartHeight - padding * 2)) / range;
   }
 
+  // best sellers
+  const mostSold = Math.max(...d.topProducts.map((p) => p.units));
+
+  // expense breakdown for the donut chart
+  const colours = ["#12805c", "#3eb489", "#b7ead3", "#f2a93b", "#d9482b"];
+  const expenseTotal = sum(d.expenseCategories.map((c) => c.amount));
+  let startAt = 0;
+  const slices = d.expenseCategories.map((c, i) => {
+    const share = (c.amount / expenseTotal) * 100;
+    const slice = colours[i] + " " + startAt + "% " + (startAt + share) + "%";
+    startAt += share;
+    return slice;
+  });
+  const donutStyle = { background: "conic-gradient(" + slices.join(", ") + ")" };
+
   const points = profits.map((p, i) => getX(i) + "," + getY(p)).join(" ");
 
   return (
@@ -234,6 +249,71 @@ function Reports() {
             ))}
           </svg>
           <p className="chart-note">Dots below the line mean a loss for that {period === "year" ? "month" : period === "month" ? "week" : "day"}.</p>
+        </div>
+
+        <div className="report-row">
+          <div className="panel">
+            <h2>Best selling products</h2>
+            {d.topProducts.map((p, i) => (
+              <div className="rank-row" key={p.name}>
+                <span className="rank-number">{i + 1}</span>
+                <div className="rank-info">
+                  <div className="rank-top">
+                    <strong>{p.name}</strong>
+                    <span>{p.units} sold</span>
+                  </div>
+                  <div className="rank-track">
+                    <div
+                      className="rank-fill"
+                      style={{ width: (p.units / mostSold) * 100 + "%" }}
+                    ></div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="panel">
+            <h2>Where the money goes</h2>
+            <div className="donut-wrap">
+              <div className="donut" style={donutStyle}>
+                <div className="donut-hole">
+                  <span>Total</span>
+                  <strong>KES {expenseTotal}</strong>
+                </div>
+              </div>
+              <ul className="donut-legend">
+                {d.expenseCategories.map((c, i) => (
+                  <li key={c.name}>
+                    <i style={{ background: colours[i] }}></i>
+                    <span>{c.name}</span>
+                    <strong>{Math.round((c.amount / expenseTotal) * 100)}%</strong>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <div className="panel pay-panel">
+          <h2>How customers pay</h2>
+          <div className="pay-bar">
+            {d.payments.map((p, i) => (
+              <div
+                key={p.name}
+                style={{ width: p.percent + "%", background: colours[i] }}
+                title={p.name + ": " + p.percent + "%"}
+              ></div>
+            ))}
+          </div>
+          <div className="pay-legend">
+            {d.payments.map((p, i) => (
+              <span key={p.name}>
+                <i style={{ background: colours[i] }}></i>
+                {p.name} {p.percent}%
+              </span>
+            ))}
+          </div>
         </div>
       </main>
     </div>
