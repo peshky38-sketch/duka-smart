@@ -226,3 +226,9 @@
     padding: 14px 10px;
   }
 }
+
+@media (max-width: 900px) {
+  .remove {
+    flex-shrink: 0;
+  }
+}

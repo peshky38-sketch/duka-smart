@@ -192,3 +192,9 @@ body {
     padding: 15px;
   }
 }
+
+@media (max-width: 800px) {
+  .auth-switch a {
+    padding: 13px 6px;
+  }
+}
