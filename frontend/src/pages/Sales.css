@@ -187,3 +187,18 @@
   margin-top: 16px;
   overflow-x: auto;
 }
+
+/* phones */
+@media (max-width: 900px) {
+  .sale-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .sales-stats {
+    max-width: none;
+  }
+
+  .product-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}

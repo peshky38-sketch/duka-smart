@@ -113,3 +113,19 @@
   color: #52736a;
   padding: 24px 0 8px;
 }
+
+/* phones */
+@media (max-width: 900px) {
+  .expense-stats {
+    grid-template-columns: repeat(2, 1fr);
+    max-width: none;
+  }
+
+  .expense-fields {
+    grid-template-columns: 1fr;
+  }
+
+  .expense-fields .wide {
+    grid-column: auto;
+  }
+}
