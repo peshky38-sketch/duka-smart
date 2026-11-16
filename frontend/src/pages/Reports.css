@@ -1,0 +1,35 @@
+.period-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.period-tabs button {
+  padding: 9px 20px;
+  border: 1px solid #cfe6da;
+  background: white;
+  border-radius: 20px;
+  font-size: 14px;
+  cursor: pointer;
+  color: #0b3d2e;
+}
+
+.period-tabs button.selected {
+  background: #12805c;
+  border-color: #12805c;
+  color: white;
+  font-weight: 700;
+}
+
+.stat-note {
+  font-size: 12px;
+  color: #52736a;
+}
+
+.profit {
+  color: #0b6b4b;
+}
+
+.loss {
+  color: #9a2a12;
+}
