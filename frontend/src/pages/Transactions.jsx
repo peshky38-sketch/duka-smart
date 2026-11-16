@@ -23,6 +23,39 @@ function Transactions() {
     { id: 14, type: "expense", ref: "EXP-001", description: "Shop rent", payment: "M-Pesa", amount: 15000, date: "2026-11-05", time: "9:00 am" },
   ]);
 
+  const [type, setType] = useState("all");
+  const [payment, setPayment] = useState("all");
+  const [from, setFrom] = useState("");
+  const [to, setTo] = useState("");
+  const [search, setSearch] = useState("");
+
+  const shown = transactions.filter((t) => {
+    if (type !== "all" && t.type !== type) return false;
+    if (payment !== "all" && t.payment !== payment) return false;
+    if (from && t.date < from) return false;
+    if (to && t.date > to) return false;
+    const text = (t.ref + " " + t.description).toLowerCase();
+    if (search && !text.includes(search.toLowerCase())) return false;
+    return true;
+  });
+
+  // the totals follow whatever is showing in the list
+  const moneyIn = shown
+    .filter((t) => t.type === "sale")
+    .reduce((sum, t) => sum + t.amount, 0);
+  const moneyOut = shown
+    .filter((t) => t.type === "expense")
+    .reduce((sum, t) => sum + t.amount, 0);
+  const net = moneyIn - moneyOut;
+
+  function clearFilters() {
+    setType("all");
+    setPayment("all");
+    setFrom("");
+    setTo("");
+    setSearch("");
+  }
+
   return (
     <div className="dash">
       <Sidebar active="Transactions" />
@@ -33,6 +66,59 @@ function Transactions() {
             <h1>Transactions</h1>
             <p className="dash-sub">Every sale and expense in one place</p>
           </div>
+        </div>
+
+        <div className="stat-grid trans-stats">
+          <div className="stat-card">
+            <span className="stat-label">Money in (sales)</span>
+            <span className="stat-value money-in">KES {moneyIn}</span>
+          </div>
+          <div className="stat-card">
+            <span className="stat-label">Money out (expenses)</span>
+            <span className="stat-value money-out">KES {moneyOut}</span>
+          </div>
+          <div className="stat-card">
+            <span className="stat-label">Net</span>
+            <span className={net >= 0 ? "stat-value money-in" : "stat-value money-out"}>
+              {net < 0 && "-"}KES {Math.abs(net)}
+            </span>
+          </div>
+        </div>
+
+        <div className="type-tabs">
+          <button className={type === "all" ? "selected" : ""} onClick={() => setType("all")}>
+            All
+          </button>
+          <button className={type === "sale" ? "selected" : ""} onClick={() => setType("sale")}>
+            Sales
+          </button>
+          <button className={type === "expense" ? "selected" : ""} onClick={() => setType("expense")}>
+            Expenses
+          </button>
+        </div>
+
+        <div className="filters">
+          <input
+            type="text"
+            placeholder="Search reference or description"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+          <select value={payment} onChange={(e) => setPayment(e.target.value)}>
+            <option value="all">All payment methods</option>
+            <option>Cash</option>
+            <option>M-Pesa</option>
+            <option>Card</option>
+          </select>
+          <div className="date-filter">
+            <label>From</label>
+            <input type="date" value={from} onChange={(e) => setFrom(e.target.value)} />
+          </div>
+          <div className="date-filter">
+            <label>To</label>
+            <input type="date" value={to} onChange={(e) => setTo(e.target.value)} />
+          </div>
+          <button className="clear-btn" onClick={clearFilters}>Clear</button>
         </div>
 
         <div className="panel table-panel">
@@ -48,7 +134,7 @@ function Transactions() {
               </tr>
             </thead>
             <tbody>
-              {transactions.map((t) => (
+              {shown.map((t) => (
                 <tr key={t.id}>
                   <td>
                     {t.date}
@@ -69,6 +155,9 @@ function Transactions() {
               ))}
             </tbody>
           </table>
+          {shown.length === 0 && (
+            <p className="empty">No transactions match these filters.</p>
+          )}
         </div>
       </main>
     </div>

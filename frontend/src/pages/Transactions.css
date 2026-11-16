@@ -25,3 +25,84 @@
   font-weight: 700;
   white-space: nowrap;
 }
+
+.trans-stats {
+  grid-template-columns: repeat(3, 1fr);
+  max-width: 780px;
+}
+
+.type-tabs {
+  display: flex;
+  gap: 8px;
+  margin-top: 20px;
+}
+
+.type-tabs button {
+  padding: 9px 20px;
+  border: 1px solid #cfe6da;
+  background: white;
+  border-radius: 20px;
+  font-size: 14px;
+  cursor: pointer;
+  color: #0b3d2e;
+}
+
+.type-tabs button.selected {
+  background: #12805c;
+  border-color: #12805c;
+  color: white;
+  font-weight: 700;
+}
+
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.filters input,
+.filters select {
+  padding: 10px 12px;
+  border: 1px solid #cfe6da;
+  border-radius: 8px;
+  font-size: 15px;
+  background: white;
+  font-family: inherit;
+}
+
+.filters input[type="text"] {
+  flex: 1;
+  min-width: 220px;
+}
+
+.filters input:focus,
+.filters select:focus {
+  outline: none;
+  border-color: #12805c;
+}
+
+.date-filter label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: #52736a;
+  margin-bottom: 3px;
+}
+
+.clear-btn {
+  padding: 10px 16px;
+  background: none;
+  border: none;
+  color: #12805c;
+  font-weight: 700;
+  font-size: 15px;
+  cursor: pointer;
+}
+
+.empty {
+  text-align: center;
+  color: #52736a;
+  padding: 24px 0 8px;
+}
