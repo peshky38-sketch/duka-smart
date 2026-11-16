@@ -122,3 +122,68 @@
   color: #52736a;
   padding: 24px 0 8px;
 }
+
+.pay-label {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  margin: 20px 0 8px;
+}
+
+.pay-options {
+  display: flex;
+  gap: 8px;
+}
+
+.pay-btn {
+  flex: 1;
+  padding: 10px;
+  border: 1px solid #cfe6da;
+  background: white;
+  border-radius: 8px;
+  font-size: 14px;
+  cursor: pointer;
+  color: #0b3d2e;
+}
+
+.pay-btn.selected {
+  background: #12805c;
+  border-color: #12805c;
+  color: white;
+  font-weight: 700;
+}
+
+.complete-btn {
+  width: 100%;
+  margin-top: 16px;
+  padding: 14px;
+  background: #12805c;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.complete-btn:hover {
+  background: #0b6b4b;
+}
+
+.sale-message {
+  text-align: center;
+  color: #12805c;
+  font-size: 14px;
+  margin: 10px 0 0;
+}
+
+.sales-stats {
+  margin-top: 16px;
+  grid-template-columns: repeat(2, 1fr);
+  max-width: 520px;
+}
+
+.history {
+  margin-top: 16px;
+  overflow-x: auto;
+}

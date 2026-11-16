@@ -18,6 +18,13 @@ function Sales() {
 
   const [search, setSearch] = useState("");
   const [cart, setCart] = useState([]);
+  const [payment, setPayment] = useState("Cash");
+  const [sales, setSales] = useState([
+    { number: "#1041", items: 4, total: 880, payment: "M-Pesa", time: "10:15 am" },
+    { number: "#1040", items: 2, total: 310, payment: "Cash", time: "9:50 am" },
+    { number: "#1039", items: 3, total: 275, payment: "Cash", time: "9:21 am" },
+  ]);
+  const [message, setMessage] = useState("");
 
   const shown = products.filter((p) =>
     p.name.toLowerCase().includes(search.toLowerCase())
@@ -58,6 +65,36 @@ function Sales() {
   }
 
   const total = cart.reduce((sum, item) => sum + item.price * item.qty, 0);
+
+  function completeSale() {
+    if (cart.length === 0) {
+      setMessage("Add at least one product first");
+      return;
+    }
+
+    // take the sold quantities out of stock
+    setProducts(
+      products.map((p) => {
+        const sold = cart.find((item) => item.id === p.id);
+        return sold ? { ...p, stock: p.stock - sold.qty } : p;
+      })
+    );
+
+    const now = new Date();
+    const newSale = {
+      number: "#" + (1042 + sales.length - 3),
+      items: cart.reduce((sum, item) => sum + item.qty, 0),
+      total: total,
+      payment: payment,
+      time: now.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }),
+    };
+
+    setSales([newSale, ...sales]);
+    setCart([]);
+    setMessage("Sale " + newSale.number + " recorded");
+  }
+
+  const salesTotal = sales.reduce((sum, s) => sum + s.total, 0);
 
   return (
     <div className="dash">
@@ -125,7 +162,62 @@ function Sales() {
               <span>Total</span>
               <strong>KES {total}</strong>
             </div>
+
+            <label className="pay-label">Payment method</label>
+            <div className="pay-options">
+              {["Cash", "M-Pesa", "Card"].map((m) => (
+                <button
+                  key={m}
+                  className={payment === m ? "pay-btn selected" : "pay-btn"}
+                  onClick={() => setPayment(m)}
+                >
+                  {m}
+                </button>
+              ))}
+            </div>
+
+            <button className="complete-btn" onClick={completeSale}>
+              Complete sale
+            </button>
+            {message && <p className="sale-message">{message}</p>}
           </div>
+        </div>
+
+        <div className="stat-grid sales-stats">
+          <div className="stat-card">
+            <span className="stat-label">Sales today</span>
+            <span className="stat-value">KES {salesTotal}</span>
+          </div>
+          <div className="stat-card">
+            <span className="stat-label">Number of sales</span>
+            <span className="stat-value">{sales.length}</span>
+          </div>
+        </div>
+
+        <div className="panel history">
+          <h2>Today's sales</h2>
+          <table>
+            <thead>
+              <tr>
+                <th>Sale</th>
+                <th>Items</th>
+                <th>Payment</th>
+                <th>Total</th>
+                <th>Time</th>
+              </tr>
+            </thead>
+            <tbody>
+              {sales.map((s) => (
+                <tr key={s.number}>
+                  <td>{s.number}</td>
+                  <td>{s.items}</td>
+                  <td>{s.payment}</td>
+                  <td>KES {s.total}</td>
+                  <td>{s.time}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       </main>
     </div>
