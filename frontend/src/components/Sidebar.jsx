@@ -8,6 +8,7 @@ function Sidebar({ active }) {
     { name: "Sales", href: "/sales" },
     { name: "Expenses", href: "/expenses" },
     { name: "Transactions", href: "/transactions" },
+    { name: "Reports", href: "/reports" },
   ];
 
   return (
