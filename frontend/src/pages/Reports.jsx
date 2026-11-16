@@ -146,7 +146,12 @@ function Reports() {
             <h1>Reports</h1>
             <p className="dash-sub">See how your business is doing</p>
           </div>
+          <button className="print-btn" onClick={() => window.print()}>
+            Print report
+          </button>
         </div>
+
+        <p className="print-title">{d.title}</p>
 
         <div className="period-tabs">
           {["week", "month", "year"].map((p) => (
@@ -183,7 +188,7 @@ function Reports() {
           </div>
         </div>
 
-        <div className="panel chart-panel">
+        <div className="panel chart-panel report-chart">
           <div className="chart-head">
             <h2>Sales and expenses</h2>
             <div className="legend">
