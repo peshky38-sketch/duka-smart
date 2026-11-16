@@ -7,6 +7,7 @@ function Sidebar({ active }) {
     { name: "Inventory", href: "/inventory" },
     { name: "Sales", href: "/sales" },
     { name: "Expenses", href: "/expenses" },
+    { name: "Transactions", href: "/transactions" },
   ];
 
   return (
