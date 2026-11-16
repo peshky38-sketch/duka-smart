@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { Fragment, useState } from "react";
 import Sidebar from "../components/Sidebar";
 import "./Dashboard.css";
 import "./Transactions.css";
@@ -28,6 +28,9 @@ function Transactions() {
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
   const [search, setSearch] = useState("");
+  const [page, setPage] = useState(1);
+  const [openId, setOpenId] = useState(null);
+  const perPage = 8;
 
   const shown = transactions.filter((t) => {
     if (type !== "all" && t.type !== type) return false;
@@ -48,12 +51,31 @@ function Transactions() {
     .reduce((sum, t) => sum + t.amount, 0);
   const net = moneyIn - moneyOut;
 
+  const pages = Math.max(1, Math.ceil(shown.length / perPage));
+  const currentPage = Math.min(page, pages);
+  const start = (currentPage - 1) * perPage;
+  const pageRows = shown.slice(start, start + perPage);
+
+  function downloadCsv() {
+    let csv = "Date,Time,Type,Reference,Description,Payment,Amount\n";
+    shown.forEach((t) => {
+      csv += [t.date, t.time, t.type, t.ref, '"' + t.description + '"', t.payment, t.amount].join(",") + "\n";
+    });
+
+    const blob = new Blob([csv], { type: "text/csv" });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = "transactions.csv";
+    link.click();
+  }
+
   function clearFilters() {
     setType("all");
     setPayment("all");
     setFrom("");
     setTo("");
     setSearch("");
+    setPage(1);
   }
 
   return (
@@ -66,6 +88,7 @@ function Transactions() {
             <h1>Transactions</h1>
             <p className="dash-sub">Every sale and expense in one place</p>
           </div>
+          <button className="csv-btn" onClick={downloadCsv}>Download CSV</button>
         </div>
 
         <div className="stat-grid trans-stats">
@@ -86,13 +109,13 @@ function Transactions() {
         </div>
 
         <div className="type-tabs">
-          <button className={type === "all" ? "selected" : ""} onClick={() => setType("all")}>
+          <button className={type === "all" ? "selected" : ""} onClick={() => { setType("all"); setPage(1); }}>
             All
           </button>
-          <button className={type === "sale" ? "selected" : ""} onClick={() => setType("sale")}>
+          <button className={type === "sale" ? "selected" : ""} onClick={() => { setType("sale"); setPage(1); }}>
             Sales
           </button>
-          <button className={type === "expense" ? "selected" : ""} onClick={() => setType("expense")}>
+          <button className={type === "expense" ? "selected" : ""} onClick={() => { setType("expense"); setPage(1); }}>
             Expenses
           </button>
         </div>
@@ -102,9 +125,9 @@ function Transactions() {
             type="text"
             placeholder="Search reference or description"
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => { setSearch(e.target.value); setPage(1); }}
           />
-          <select value={payment} onChange={(e) => setPayment(e.target.value)}>
+          <select value={payment} onChange={(e) => { setPayment(e.target.value); setPage(1); }}>
             <option value="all">All payment methods</option>
             <option>Cash</option>
             <option>M-Pesa</option>
@@ -112,11 +135,11 @@ function Transactions() {
           </select>
           <div className="date-filter">
             <label>From</label>
-            <input type="date" value={from} onChange={(e) => setFrom(e.target.value)} />
+            <input type="date" value={from} onChange={(e) => { setFrom(e.target.value); setPage(1); }} />
           </div>
           <div className="date-filter">
             <label>To</label>
-            <input type="date" value={to} onChange={(e) => setTo(e.target.value)} />
+            <input type="date" value={to} onChange={(e) => { setTo(e.target.value); setPage(1); }} />
           </div>
           <button className="clear-btn" onClick={clearFilters}>Clear</button>
         </div>
@@ -134,29 +157,65 @@ function Transactions() {
               </tr>
             </thead>
             <tbody>
-              {shown.map((t) => (
-                <tr key={t.id}>
-                  <td>
-                    {t.date}
-                    <span className="time">{t.time}</span>
-                  </td>
-                  <td>
-                    <span className={t.type === "sale" ? "tag tag-in" : "tag tag-out"}>
-                      {t.type === "sale" ? "Sale" : "Expense"}
-                    </span>
-                  </td>
-                  <td>{t.ref}</td>
-                  <td>{t.description}</td>
-                  <td>{t.payment}</td>
-                  <td className={t.type === "sale" ? "money-in" : "money-out"}>
-                    {t.type === "sale" ? "+" : "-"} KES {t.amount}
-                  </td>
-                </tr>
+              {pageRows.map((t) => (
+                <Fragment key={t.id}>
+                  <tr className="clickable" onClick={() => setOpenId(openId === t.id ? null : t.id)}>
+                    <td>
+                      {t.date}
+                      <span className="time">{t.time}</span>
+                    </td>
+                    <td>
+                      <span className={t.type === "sale" ? "tag tag-in" : "tag tag-out"}>
+                        {t.type === "sale" ? "Sale" : "Expense"}
+                      </span>
+                    </td>
+                    <td>{t.ref}</td>
+                    <td>{t.description}</td>
+                    <td>{t.payment}</td>
+                    <td className={t.type === "sale" ? "money-in" : "money-out"}>
+                      {t.type === "sale" ? "+" : "-"} KES {t.amount}
+                    </td>
+                  </tr>
+                  {openId === t.id && (
+                    <tr className="details-row">
+                      <td colSpan="6">
+                        <strong>{t.type === "sale" ? "Items sold" : "Expense"}</strong>
+                        <ul>
+                          {t.description.split(", ").map((item) => (
+                            <li key={item}>{item}</li>
+                          ))}
+                        </ul>
+                        <span className="time">
+                          Recorded on {t.date} at {t.time}, paid by {t.payment}
+                        </span>
+                      </td>
+                    </tr>
+                  )}
+                </Fragment>
               ))}
             </tbody>
           </table>
           {shown.length === 0 && (
             <p className="empty">No transactions match these filters.</p>
+          )}
+
+          {shown.length > 0 && (
+            <div className="pagination">
+              <span>
+                Showing {start + 1} to {Math.min(start + perPage, shown.length)} of {shown.length}
+              </span>
+              <div>
+                <button disabled={currentPage === 1} onClick={() => setPage(currentPage - 1)}>
+                  Previous
+                </button>
+                <span className="page-number">
+                  Page {currentPage} of {pages}
+                </span>
+                <button disabled={currentPage === pages} onClick={() => setPage(currentPage + 1)}>
+                  Next
+                </button>
+              </div>
+            </div>
           )}
         </div>
       </main>
