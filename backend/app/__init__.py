@@ -26,6 +26,12 @@ def create_app():
 
     from app.routes.auth import auth
     app.register_blueprint(auth)
+    from app.routes.products import products
+    app.register_blueprint(products)
+    from app.routes.categories import categories
+    app.register_blueprint(categories)
+    from app.routes.suppliers import suppliers
+    app.register_blueprint(suppliers)
 
     CORS(
         app,
