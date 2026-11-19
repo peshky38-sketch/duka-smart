@@ -32,6 +32,8 @@ def create_app():
     app.register_blueprint(categories)
     from app.routes.suppliers import suppliers
     app.register_blueprint(suppliers)
+    from app.routes.sales import sales
+    app.register_blueprint(sales)
 
     CORS(
         app,
