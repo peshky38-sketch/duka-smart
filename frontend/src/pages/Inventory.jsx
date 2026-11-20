@@ -1,5 +1,6 @@
 import { useState } from "react";
 import Sidebar from "../components/Sidebar";
+import { formatKES } from "../utils/formatMoney";
 import "./Dashboard.css";
 import "./Inventory.css";
 
@@ -195,8 +196,8 @@ function Inventory() {
                   </td>
                   <td>{p.category}</td>
                   <td>{p.supplier}</td>
-                  <td>KES {p.buying}</td>
-                  <td>KES {p.selling}</td>
+                  <td>{formatKES(p.buying)}</td>
+                  <td>{formatKES(p.selling)}</td>
                   <td>{p.quantity}</td>
                   <td>
                     <span className={"tag tag-" + getStatus(p)}>

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import Sidebar from "../components/Sidebar";
+import { formatKES } from "../utils/formatMoney";
 import "./Dashboard.css";
 import "./Sales.css";
 
@@ -126,7 +127,7 @@ function Sales() {
                   onClick={() => addToCart(p)}
                 >
                   <strong>{p.name}</strong>
-                  <span className="price">KES {p.price}</span>
+                  <span className="price">{formatKES(p.price)}</span>
                   <span className="stock">
                     {p.stock === 0 ? "Out of stock" : p.stock + " in stock"}
                   </span>
@@ -146,21 +147,21 @@ function Sales() {
               <div className="cart-item" key={item.id}>
                 <div className="cart-name">
                   <strong>{item.name}</strong>
-                  <span>KES {item.price} each</span>
+                  <span>{formatKES(item.price)} each</span>
                 </div>
                 <div className="qty">
                   <button onClick={() => changeQty(item.id, -1)}>-</button>
                   <span>{item.qty}</span>
                   <button onClick={() => changeQty(item.id, 1)}>+</button>
                 </div>
-                <div className="line-total">KES {item.price * item.qty}</div>
+                <div className="line-total">{formatKES(item.price * item.qty)}</div>
                 <button className="remove" onClick={() => removeItem(item.id)}>x</button>
               </div>
             ))}
 
             <div className="cart-total">
               <span>Total</span>
-              <strong>KES {total}</strong>
+              <strong>{formatKES(total)}</strong>
             </div>
 
             <label className="pay-label">Payment method</label>
@@ -186,7 +187,7 @@ function Sales() {
         <div className="stat-grid sales-stats">
           <div className="stat-card">
             <span className="stat-label">Sales today</span>
-            <span className="stat-value">KES {salesTotal}</span>
+            <span className="stat-value">{formatKES(salesTotal)}</span>
           </div>
           <div className="stat-card">
             <span className="stat-label">Number of sales</span>
@@ -212,7 +213,7 @@ function Sales() {
                   <td>{s.number}</td>
                   <td>{s.items}</td>
                   <td>{s.payment}</td>
-                  <td>KES {s.total}</td>
+                  <td>{formatKES(s.total)}</td>
                   <td>{s.time}</td>
                 </tr>
               ))}

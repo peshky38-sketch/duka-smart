@@ -1,4 +1,5 @@
 import Sidebar from "../components/Sidebar";
+import { formatKES } from "../utils/formatMoney";
 import "./Dashboard.css";
 
 function Dashboard() {
@@ -126,7 +127,7 @@ function Dashboard() {
                   <tr key={s.id}>
                     <td>{s.id}</td>
                     <td>{s.items}</td>
-                    <td>KES {s.total}</td>
+                    <td>{formatKES(s.total)}</td>
                     <td>{s.time}</td>
                   </tr>
                 ))}

@@ -1,5 +1,6 @@
 import { Fragment, useState } from "react";
 import Sidebar from "../components/Sidebar";
+import { formatKES } from "../utils/formatMoney";
 import "./Dashboard.css";
 import "./Transactions.css";
 
@@ -94,16 +95,16 @@ function Transactions() {
         <div className="stat-grid trans-stats">
           <div className="stat-card">
             <span className="stat-label">Money in (sales)</span>
-            <span className="stat-value money-in">KES {moneyIn}</span>
+            <span className="stat-value money-in">{formatKES(moneyIn)}</span>
           </div>
           <div className="stat-card">
             <span className="stat-label">Money out (expenses)</span>
-            <span className="stat-value money-out">KES {moneyOut}</span>
+            <span className="stat-value money-out">{formatKES(moneyOut)}</span>
           </div>
           <div className="stat-card">
             <span className="stat-label">Net</span>
             <span className={net >= 0 ? "stat-value money-in" : "stat-value money-out"}>
-              {net < 0 && "-"}KES {Math.abs(net)}
+              {net < 0 && "-"}{formatKES(Math.abs(net))}
             </span>
           </div>
         </div>
@@ -173,7 +174,7 @@ function Transactions() {
                     <td>{t.description}</td>
                     <td>{t.payment}</td>
                     <td className={t.type === "sale" ? "money-in" : "money-out"}>
-                      {t.type === "sale" ? "+" : "-"} KES {t.amount}
+                      {t.type === "sale" ? "+" : "-"} {formatKES(t.amount)}
                     </td>
                   </tr>
                   {openId === t.id && (

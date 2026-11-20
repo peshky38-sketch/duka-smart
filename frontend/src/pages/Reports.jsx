@@ -1,5 +1,6 @@
 import { useState } from "react";
 import Sidebar from "../components/Sidebar";
+import { formatKES } from "../utils/formatMoney";
 import "./Dashboard.css";
 import "./Reports.css";
 
@@ -168,21 +169,21 @@ function Reports() {
         <div className="stat-grid report-stats">
           <div className="stat-card">
             <span className="stat-label">Revenue</span>
-            <span className="stat-value">KES {revenue}</span>
+            <span className="stat-value">{formatKES(revenue)}</span>
           </div>
           <div className="stat-card">
             <span className="stat-label">Gross profit</span>
-            <span className="stat-value">KES {grossProfit}</span>
+            <span className="stat-value">{formatKES(grossProfit)}</span>
             <span className="stat-note">Revenue minus cost of goods sold</span>
           </div>
           <div className="stat-card">
             <span className="stat-label">Expenses</span>
-            <span className="stat-value">KES {expenses}</span>
+            <span className="stat-value">{formatKES(expenses)}</span>
           </div>
           <div className="stat-card">
             <span className="stat-label">Net profit</span>
             <span className={netProfit >= 0 ? "stat-value profit" : "stat-value loss"}>
-              {netProfit < 0 && "-"}KES {Math.abs(netProfit)}
+              {netProfit < 0 && "-"}{formatKES(Math.abs(netProfit))}
             </span>
             <span className="stat-note">Gross profit minus expenses</span>
           </div>
@@ -204,19 +205,19 @@ function Reports() {
                   <div
                     className="bar bar-sales"
                     style={{ height: (d.sales[i] / maxValue) * 100 + "%" }}
-                    title={"Sales: KES " + d.sales[i]}
+                    title={"Sales: " + formatKES(d.sales[i])}
                   ></div>
                   <div
                     className="bar bar-expenses"
                     style={{ height: (d.expenses[i] / maxValue) * 100 + "%" }}
-                    title={"Expenses: KES " + d.expenses[i]}
+                    title={"Expenses: " + formatKES(d.expenses[i])}
                   ></div>
                 </div>
                 <span className="chart-label">{label}</span>
               </div>
             ))}
           </div>
-          <p className="chart-note">Tallest bar is KES {maxValue}. Hover a bar to see its amount.</p>
+          <p className="chart-note">Tallest bar is {formatKES(maxValue)}. Hover a bar to see its amount.</p>
         </div>
 
         <div className="panel chart-panel">
@@ -245,7 +246,7 @@ function Reports() {
                   r="5"
                   className={p >= 0 ? "dot-up" : "dot-down"}
                 >
-                  <title>{d.labels[i] + ": KES " + p}</title>
+                  <title>{d.labels[i] + ": " + formatKES(p)}</title>
                 </circle>
                 <text x={getX(i)} y={chartHeight - 6} textAnchor="middle" className="axis-text">
                   {d.labels[i]}
@@ -284,7 +285,7 @@ function Reports() {
               <div className="donut" style={donutStyle}>
                 <div className="donut-hole">
                   <span>Total</span>
-                  <strong>KES {expenseTotal}</strong>
+                  <strong>{formatKES(expenseTotal)}</strong>
                 </div>
               </div>
               <ul className="donut-legend">

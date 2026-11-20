@@ -1,5 +1,6 @@
 import { useState } from "react";
 import Sidebar from "../components/Sidebar";
+import { formatKES } from "../utils/formatMoney";
 import "./Dashboard.css";
 import "./Expenses.css";
 
@@ -97,7 +98,7 @@ function Expenses() {
         <div className="stat-grid expense-stats">
           <div className="stat-card">
             <span className="stat-label">Total this month</span>
-            <span className="stat-value">KES {total}</span>
+            <span className="stat-value">{formatKES(total)}</span>
           </div>
           <div className="stat-card">
             <span className="stat-label">Number of expenses</span>
@@ -195,7 +196,7 @@ function Expenses() {
                   <td>{e.category}</td>
                   <td>{e.payment}</td>
                   <td>{e.date}</td>
-                  <td>KES {e.amount}</td>
+                  <td>{formatKES(e.amount)}</td>
                   <td className="row-actions">
                     <button onClick={() => handleDelete(e.id)}>Delete</button>
                   </td>
