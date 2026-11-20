@@ -34,6 +34,8 @@ def create_app():
     app.register_blueprint(suppliers)
     from app.routes.sales import sales
     app.register_blueprint(sales)
+    from app.routes.expenses import expenses
+    app.register_blueprint(expenses)
 
     CORS(
         app,
