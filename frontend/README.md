@@ -35,4 +35,4 @@ Things to remember:
    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
    ```
 2. All the css files are global (no css modules yet), so give new class names a page-specific name. Charts on the Reports page use `report-chart` for this reason.
-3. Money amounts are shown without thousands separators for now (KES 1844400). A small format helper would be good once the real data is in.
+3. Money amounts use the small `formatKES` helper in `src/utils/formatMoney.js` (KES 1,844,400). Use it for every new amount so the format stays the same.
