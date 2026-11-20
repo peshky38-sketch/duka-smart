@@ -36,6 +36,8 @@ def create_app():
     app.register_blueprint(sales)
     from app.routes.expenses import expenses
     app.register_blueprint(expenses)
+    from app.routes.dashboard import dashboard
+    app.register_blueprint(dashboard)
 
     CORS(
         app,
