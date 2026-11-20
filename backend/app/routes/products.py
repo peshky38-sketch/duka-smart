@@ -239,6 +239,41 @@ def get_products():
     }), 200
 
 
+# Get low-stock products
+@products.get("/api/products/low-stock")
+@jwt_required()
+def get_low_stock_products():
+
+    user_id = get_jwt_identity()
+
+    user = db.session.get(User, user_id)
+
+    if not user:
+        return jsonify({
+            "error": "Invalid user details"
+        }), 401
+
+    low_stock_products = Product.query.filter(
+        Product.business_id == user.business_id,
+        Product.quantity <= Product.low_stock_threshold
+    ).all()
+
+    products_list = []
+
+    for product in low_stock_products:
+        products_list.append({
+            "id": product.id,
+            "name": product.product_name,
+            "quantity": product.quantity,
+            "low_stock_threshold": product.low_stock_threshold,
+            "sku": product.sku
+        })
+
+    return jsonify({
+        "low_stock_products": products_list,
+        "total_low_stock": len(products_list)
+    }), 200
+
 # Get one product
 @products.get("/api/products/<int:product_id>")
 @jwt_required()
