@@ -25,6 +25,11 @@ def create_sales():
             "error": "User not found"
         }), 404
 
+    if existing_user.business_id is None:
+        return jsonify({
+            "error": "User has no associated business"
+        }), 400
+
     data = request.get_json(silent=True)
 
     if not isinstance(data, dict):
@@ -62,7 +67,6 @@ def create_sales():
             "error": "Sale must contain at least one item"
         }), 400
 
-    # validating each sale
     sale_items = []
     total_amount = Decimal("0")
     seen_product_ids = set()
@@ -107,16 +111,20 @@ def create_sales():
 
         seen_product_ids.add(product_id)
 
-        # Only retrieve products belonging to this user's business
         product = Product.query.filter_by(
             id=product_id,
             business_id=existing_user.business_id
-        ).first()
+        ).with_for_update().first()
 
         if product is None:
             return jsonify({
                 "error": f"Product {product_id} not found"
             }), 404
+
+        if quantity > product.quantity:
+            return jsonify({
+                "error": f"Insufficient stock for {product_id}. Available stock: {product.quantity}"
+            }), 400
 
         unit_price = Decimal(str(product.selling_price))
         subtotal = unit_price * quantity
@@ -124,13 +132,13 @@ def create_sales():
         total_amount += subtotal
 
         sale_items.append({
+            "product": product,
             "product_id": product.id,
             "quantity": quantity,
             "unit_price": unit_price,
             "subtotal": subtotal
         })
 
-    # Create the sale after all items have passed validation
     new_sale = Sale(
         sale_number=f"SALE-{uuid.uuid4().hex[:10].upper()}",
         total_amount=total_amount,
@@ -144,6 +152,8 @@ def create_sales():
         db.session.flush()
 
         for item in sale_items:
+            item["product"].quantity -= item["quantity"]
+
             new_sale_item = SaleItem(
                 sale_id=new_sale.id,
                 product_id=item["product_id"],
@@ -158,6 +168,7 @@ def create_sales():
 
     except SQLAlchemyError:
         db.session.rollback()
+
         return jsonify({
             "error": "Failed to create sale"
         }), 500
@@ -179,50 +190,51 @@ def create_sales():
         ]
     }), 201
 
+
 @sales.get("/api/sales")
 @jwt_required()
 def get_sales():
     user_id = get_jwt_identity()
 
-    
-    loged_in_user = User.query.filter_by(
-        id = user_id
-        ).first()
+    logged_in_user = User.query.filter_by(
+        id=user_id
+    ).first()
 
-    if loged_in_user is None:
+    if logged_in_user is None:
         return jsonify({
             "error": "User not found"
         }), 404
 
     user_sales = Sale.query.filter_by(
-        business_id=loged_in_user.business_id
+        business_id=logged_in_user.business_id
     ).all()
 
     sales_list = []
 
     for sale in user_sales:
-       sale_items= SaleItem.query.filter_by(
-            sale_id = sale.id
-            ).all()
+        sale_items = SaleItem.query.filter_by(
+            sale_id=sale.id
+        ).all()
 
-       formatted_items = []
-       for item in sale_items:
-           formatted_items.append({
-               "product_id" : item.product_id,
-               "quantity" : item.quantity,
-               "unit_price": str(item.unit_price),
-               "subtotal": str(item.subtotal)
-           })
+        formatted_items = []
 
-       current_sale = {
-           "sale_id": sale.id,
-           "sale_number": sale.sale_number,
-           "total_amount": str(sale.total_amount),
-           "payment_method": sale.payment_method,
-           "created_at": sale.created_at.isoformat(),
-           "items": formatted_items
-       }
-       sales_list.append(current_sale)
+        for item in sale_items:
+            formatted_items.append({
+                "product_id": item.product_id,
+                "quantity": item.quantity,
+                "unit_price": str(item.unit_price),
+                "subtotal": str(item.subtotal)
+            })
 
-    return jsonify( sales_list)
-     
+        current_sale = {
+            "sale_id": sale.id,
+            "sale_number": sale.sale_number,
+            "total_amount": str(sale.total_amount),
+            "payment_method": sale.payment_method,
+            "created_at": sale.created_at.isoformat(),
+            "items": formatted_items
+        }
+
+        sales_list.append(current_sale)
+
+    return jsonify(sales_list), 200
