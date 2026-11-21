@@ -1,0 +1,8 @@
+/* M-Pesa payment prompt */
+.mpesa{text-align:center}
+.mpesa .emoji{font-size:52px;display:inline-block;animation:mpesa-pulse 1.4s ease-in-out infinite}
+.mpesa .count{font-size:32px;font-weight:800;margin:8px 0}
+.mpesa .demo{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:14px}
+.mpesa .tiny{margin-top:14px;font-size:13px}
+.mpesa form label{text-align:left}
+@keyframes mpesa-pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.12)}}

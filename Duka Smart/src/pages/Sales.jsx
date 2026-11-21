@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useApp, isOut } from "../context/AppContext.jsx";
+import MpesaModal from "../components/MpesaModal.jsx";
 
 const TABS = ["All", "Grocery", "Drinks", "Bakery", "Household"];
 
@@ -10,13 +11,19 @@ export default function Sales() {
   const [cart, setCart] = useState({}); // { productId: qty }
   const [method, setMethod] = useState("M-Pesa");
   const [msg, setMsg] = useState(null);
+  const [mpesaOpen, setMpesaOpen] = useState(false);
+  const [paid, setPaid] = useState(null); // an M-Pesa payment that was received but not saved yet
 
   const shown = products.filter(
     (p) =>
       (tab === "All" || p.category === tab) &&
       p.name.toLowerCase().includes(search.toLowerCase())
   );
-  const lines = Object.keys(cart).map((id) => ({ ...products.find((p) => p.id === Number(id)), qty: cart[id] }));
+  // `qty` on a line is how many are in the sale; `stock` is how many are on the shelf
+  const lines = Object.keys(cart).map((id) => {
+    const p = products.find((x) => x.id === Number(id));
+    return { ...p, qty: cart[id], stock: p.qty };
+  });
   const total = lines.reduce((s, l) => s + l.price * l.qty, 0);
   const nextId = Math.max(0, ...sales.map((s) => s.id)) + 1;
 
@@ -29,7 +36,7 @@ export default function Sales() {
     const n = (cart[p.id] || 0) + d;
     const next = { ...cart };
     if (n <= 0) delete next[p.id];
-    else if (n <= p.qty) next[p.id] = n;
+    else if (n <= p.stock) next[p.id] = n; // never above the stock on the shelf
     setCart(next);
   };
 
@@ -46,15 +53,23 @@ export default function Sales() {
     }
   };
 
-  const complete = async () => {
-    if (!lines.length) return;
+  // Records the sale (and reduces stock). For M-Pesa this runs only after the payment succeeded.
+  const finishSale = async (receipt) => {
     try {
       await completeSale(lines.map((l) => ({ id: l.id, qty: l.qty })), method);
       setCart({});
-      setMsg({ ok: true, text: `Sale #${nextId} completed. Stock updated.` });
+      setPaid(null);
+      setMsg({ ok: true, text: `Sale #${nextId} completed. Stock updated.${receipt ? ` M-Pesa receipt: ${receipt}.` : ""}` });
     } catch (err) {
-      setMsg({ ok: false, text: err.message });
+      if (receipt) setPaid({ receipt }); // the customer already paid, so never ask them to pay twice
+      setMsg({ ok: false, text: receipt ? `Payment received (${receipt}) but the sale was not saved: ${err.message}. Press Save sale to try again.` : err.message });
     }
+  };
+
+  const complete = () => {
+    if (!lines.length) return;
+    if (method === "M-Pesa" && !paid) setMpesaOpen(true); // send the payment prompt first
+    else finishSale(paid?.receipt);
   };
 
   return (
@@ -107,11 +122,21 @@ export default function Sales() {
             ))}
           </div>
           <button className="btn full big" onClick={complete} disabled={!lines.length}>
-            Complete sale{total ? ` · KES ${total.toLocaleString()}` : ""}
+            {paid ? "Save sale" : method === "M-Pesa" ? "Request M-Pesa payment" : "Complete sale"}{total ? ` · KES ${total.toLocaleString()}` : ""}
           </button>
-          <small className="muted">Stock updates automatically when you complete the sale.</small>
+          <small className="muted">
+            {method === "M-Pesa" ? "A payment prompt is sent to the customer's phone. " : ""}Stock updates automatically when the sale is completed.
+          </small>
         </div>
       </div>
+
+      {mpesaOpen && (
+        <MpesaModal
+          amount={total}
+          onPaid={(receipt) => { setMpesaOpen(false); finishSale(receipt); }}
+          onClose={() => setMpesaOpen(false)}
+        />
+      )}
     </>
   );
 }

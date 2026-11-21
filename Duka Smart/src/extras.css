@@ -58,3 +58,11 @@
   .actions{flex-wrap:wrap}
   .land-cta{padding:24px}
 }
+
+/* notifications */
+a.bell{color:inherit;font-size:18px}
+.notif{display:flex;align-items:center;gap:12px;padding:14px 18px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.notif:last-child{border-bottom:0}
+.notif.unread{background:var(--mist);border-left:4px solid var(--em)}
+.notif .ico{font-size:22px}
+.notif .grow{flex:1;min-width:180px}

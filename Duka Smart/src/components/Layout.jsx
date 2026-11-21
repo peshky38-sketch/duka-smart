@@ -1,29 +1,28 @@
-import{NavLink, Outlet} from "react-router-dom";
+import { NavLink, Outlet, Link } from "react-router-dom";
 import Logo from "./Logo.jsx";
-import { useApp, isLow, isOut} from "../context/AppContext.jsx";
+import { useApp, isLow, isOut } from "../context/AppContext.jsx";
 
 const LINKS = [
-    ["/","Dashboard"],
-    ["/sales",  "Sales"],
-    ["/inventory",  "Inventory"],
-    ["/transactions",  "Transactions"],
-    ["/expenses",  "Expenses"],
-    ["/reports",  "Reports"],
-    ["/suppliers",  "Suppliers"],
-    ["/settings",  "Settings"],
-    ["/profile", "👤", "Profile"]
+  ["/",  "Dashboard"],
+  ["/sales",  "Sales"],
+  ["/inventory",  "Inventory"],
+  ["/transactions",  "Transactions"],
+  ["/expenses",  "Expenses"],
+  ["/reports",  "Reports"],
+  ["/suppliers",  "Suppliers"],
+  ["/settings",  "Settings"],
 ];
 
 export default function Layout() {
-    const {user, logout,products, error} = useApp();
-    const alerts = products.filter((p) => isLow(p) || isOut(p)).length;
+  const { user, logout, products, error, unread } = useApp();
+  const alerts = products.filter((p) => isLow(p) || isOut(p)).length;
 
-    return (
-        <div className="app">
-        <aside>
+  return (
+    <div className="app">
+      <aside>
         <Logo />
         {LINKS.map(([to, icon, label]) => (
-          <NavLink key={to} to={to} end={to === "/"} className={({ isActive }) => (isActive ? "active" : "")}>
+          <NavLink key={to} to={to} end={to === "/"} className={({ isActive }) => (isActive ? "on" : "")}>
             {icon} {label}
           </NavLink>
         ))}
@@ -32,12 +31,16 @@ export default function Layout() {
         <header className="topbar">
           <input placeholder="Search products, sales, suppliers" />
           <div className="user">
-            <span className="bell">🔔<i>{alerts}</i></span>
-            <span className="mini">{user.avatar ? <img src={user.avatar} alt="" /> : user.name.slice(0, 1).toUpperCase()}</span>
-            <div>
-              <b>{user.name}</b>
-              <small>Owner · {user.shop}</small>
-            </div>
+            <Link to="/notifications" className="bell" title="Notifications">
+              🔔{unread > 0 && <i>{unread}</i>}
+            </Link>
+            <Link to="/profile" className="me">
+              <span className="mini">{user.avatar ? <img src={user.avatar} alt="" /> : user.name.slice(0, 1).toUpperCase()}</span>
+              <div>
+                <b>{user.name}</b>
+                <small>Owner · {user.shop}</small>
+              </div>
+            </Link>
             <button className="btn out" onClick={logout}>Log out</button>
           </div>
         </header>
@@ -46,6 +49,6 @@ export default function Layout() {
           <Outlet />
         </main>
       </div>
-        </div>
-    );
+    </div>
+  );
 }

@@ -13,6 +13,7 @@ import Reports from "./pages/Reports.jsx";
 import Suppliers from "./pages/Suppliers.jsx";
 import Profile from "./pages/Profile.jsx";
 import Settings from "./pages/Settings.jsx";
+import Notifications from "./pages/Notifications.jsx";
 import Placeholder from "./pages/Placeholder.jsx";
 import "./extras.css";
 
@@ -36,6 +37,7 @@ export default function App() {
         <Route path="expenses" element={<Expenses />} />
         <Route path="reports" element={<Reports />} />
         <Route path="suppliers" element={<Suppliers />} />
+        <Route path="notifications" element={<Notifications />} />
         <Route path="profile" element={<Profile />} />
         <Route path="settings" element={<Settings />} />
         <Route path=":page" element={<Placeholder />} />

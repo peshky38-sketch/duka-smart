@@ -13,6 +13,9 @@ export const useApp = () => useContext(Ctx);
 export const isOut = (p) => p.qty === 0;
 export const isLow = (p) => p.qty > 0 && p.qty <= p.minStock; // less than or equal to minimum
 
+// Remembers each account's profile (photo, phone...) so it survives logging out (demo mode)
+const savedProfile = (email) => JSON.parse(localStorage.getItem("profile:" + email) || "{}");
+
 export function AppProvider({ children }) {
   const [user, setUser] = useState(() => JSON.parse(localStorage.getItem("user") || "null"));
   const [products, setProducts] = useState(USE_API ? [] : PRODUCTS);
@@ -20,6 +23,7 @@ export function AppProvider({ children }) {
   const [expenses, setExpenses] = useState(USE_API ? [] : EXPENSES);
   const [suppliers, setSuppliers] = useState(USE_API ? [] : SUPPLIERS);
   const [loading, setLoading] = useState(false);
+  const [loaded, setLoaded] = useState(!USE_API); // true once the first data has arrived
   const [error, setError] = useState("");
 
   // Load everything from the backend once the user is logged in
@@ -29,8 +33,45 @@ export function AppProvider({ children }) {
     Promise.all([api.getProducts(), api.getSales(), api.getExpenses()])
       .then(([p, s, e]) => { setProducts(p); setSales(s); setExpenses(e); setError(""); })
       .catch((err) => setError(err.message))
-      .finally(() => setLoading(false));
+      .finally(() => { setLoading(false); setLoaded(true); });
   }, [user]);
+
+  // ---------- notifications: stock alerts and new sales ----------
+  const stockAlerts = products
+    .filter((p) => isLow(p) || isOut(p))
+    .sort((a, b) => a.qty - b.qty)
+    .map((p) => ({ id: `${p.id}-${isOut(p) ? "out" : "low"}`, kind: isOut(p) ? "out" : "low", product: p }));
+  const saleAlerts = [...sales]
+    .sort((a, b) => new Date(b.date) - new Date(a.date))
+    .slice(0, 20) // the 20 most recent sales
+    .map((s) => ({ id: `sale-${s.id}`, kind: "sale", sale: s }));
+  const alerts = [...stockAlerts, ...saleAlerts];
+
+  const [readIds, setReadIds] = useState(() => JSON.parse(localStorage.getItem("readAlerts") || "[]"));
+  // Sales that existed the first time the app loaded are not "new": only later sales notify
+  const [baseline, setBaseline] = useState(() => {
+    const v = localStorage.getItem("saleBaseline");
+    return v === null ? null : Number(v);
+  });
+
+  useEffect(() => localStorage.setItem("readAlerts", JSON.stringify(readIds)), [readIds]);
+  useEffect(() => {
+    if (!loaded || baseline !== null) return;
+    const max = Math.max(0, ...sales.map((x) => x.id));
+    localStorage.setItem("saleBaseline", String(max));
+    setBaseline(max);
+  }, [loaded, sales]);
+  // forget "read" marks for alerts that no longer apply, so a product that runs low again is unread again
+  useEffect(() => {
+    if (loading || !loaded || products.length === 0) return;
+    const live = alerts.map((a) => a.id);
+    setReadIds((r) => (r.every((id) => live.includes(id)) ? r : r.filter((id) => live.includes(id))));
+  }, [products, sales, loading, loaded]);
+
+  const isRead = (a) => readIds.includes(a.id) || (a.kind === "sale" && (baseline === null || a.sale.id <= baseline));
+  const unread = alerts.filter((a) => !isRead(a)).length;
+  const markRead = (id) => setReadIds((r) => (r.includes(id) ? r : [...r, id]));
+  const markAllRead = () => setReadIds((r) => [...new Set([...r, ...alerts.map((a) => a.id)])]);
 
   // Suppliers load separately so a missing suppliers endpoint never breaks the rest of the app
   useEffect(() => {
@@ -42,11 +83,14 @@ export function AppProvider({ children }) {
   const startSession = (u) => { localStorage.setItem("user", JSON.stringify(u)); setUser(u); };
 
   const login = async (email, password) => {
-    if (!USE_API) return startSession({ name: "Wanjiru", shop: "Mama Wanjiru Stores", email });
+    if (!USE_API) return startSession({ name: "Wanjiru", shop: "Mama Wanjiru Stores", email, ...savedProfile(email) });
     startSession(await api.login(email, password));
   };
   const register = async (f) => {
-    if (!USE_API) return startSession({ name: f.name, shop: f.shop, email: f.email });
+    if (!USE_API) {
+      localStorage.setItem("profile:" + f.email, JSON.stringify({ name: f.name, shop: f.shop, email: f.email }));
+      return startSession({ name: f.name, shop: f.shop, email: f.email });
+    }
     await api.register(f);
     await login(f.email, f.password);
   };
@@ -60,6 +104,7 @@ export function AppProvider({ children }) {
   const updateProfile = async (changes) => {
     if (USE_API) await profileApi.update(changes);
     const next = { ...user, ...changes };
+    localStorage.setItem("profile:" + next.email, JSON.stringify(next));
     localStorage.setItem("user", JSON.stringify(next));
     setUser(next);
   };
@@ -142,6 +187,7 @@ export function AppProvider({ children }) {
       sales, completeSale,
       expenses, addExpense,
       suppliers, saveSupplier, deleteSupplier,
+      alerts, readIds, isRead, unread, markRead, markAllRead,
     }}>
       {children}
     </Ctx.Provider>
