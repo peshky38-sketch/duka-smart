@@ -10,6 +10,7 @@ import Transactions from "./pages/Transactions.jsx";
 import Expenses from "./pages/Expenses.jsx";
 import Reports from "./pages/Reports.jsx";
 import Placeholder from "./pages/Placeholder.jsx";
+import Settings from "./pages/Settings.jsx";
 
 function Protected({ children }) {
   const { user } = useApp();

@@ -119,3 +119,12 @@ tr.click:hover{background:var(--bg)}
 tr.detail td{background:var(--bg);padding:6px 18px}
 tr.detail .row:last-child{border:0}
 .chartbox{height:260px;margin-top:14px}
+
+/* settings page */
+.settings{max-width:640px;display:grid;gap:14px}
+.themes{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px}
+.theme{background:var(--bg);border:2px solid var(--line);border-radius:14px;padding:16px;text-align:left;display:flex;flex-direction:column;gap:4px}
+.theme span{font-size:28px}
+.theme.on{border-color:var(--em)}
+.btn.danger{background:var(--err-bg);color:var(--err)}
+
