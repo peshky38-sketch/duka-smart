@@ -11,6 +11,8 @@ import Expenses from "./pages/Expenses.jsx";
 import Reports from "./pages/Reports.jsx";
 import Placeholder from "./pages/Placeholder.jsx";
 import Settings from "./pages/Settings.jsx";
+import Profile from "./pages/Profile.jsx";
+
 
 function Protected({ children }) {
   const { user } = useApp();
@@ -28,7 +30,9 @@ export default function App() {
         <Route path="inventory" element={<Inventory />} />
         <Route path="transactions" element={<Transactions />} />
         <Route path="expenses" element={<Expenses />} />
+        <Route path="settings" element={<Settings />} />
         <Route path="reports" element={<Reports />} />
+         <Route path="profile" element={<Profile />} />
         <Route path=":page" element={<Placeholder />} />
       </Route>
     </Routes>

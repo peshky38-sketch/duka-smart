@@ -11,6 +11,7 @@ const LINKS = [
     ["/reports",  "Reports"],
     ["/suppliers",  "Suppliers"],
     ["/settings",  "Settings"],
+    ["/profile", "👤", "Profile"]
 ];
 
 export default function Layout() {
@@ -32,6 +33,7 @@ export default function Layout() {
           <input placeholder="Search products, sales, suppliers" />
           <div className="user">
             <span className="bell">🔔<i>{alerts}</i></span>
+            <span className="mini">{user.avatar ? <img src={user.avatar} alt="" /> : user.name.slice(0, 1).toUpperCase()}</span>
             <div>
               <b>{user.name}</b>
               <small>Owner · {user.shop}</small>

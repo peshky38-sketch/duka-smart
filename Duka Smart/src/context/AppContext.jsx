@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { PRODUCTS, SALES, EXPENSES } from "../data/mock";
 import { api, USE_API } from "../services/api";
+import { profileApi } from "../services/profile";
 import { sum } from "../utils";
 
 const Ctx = createContext();
@@ -44,6 +45,18 @@ export function AppProvider({ children }) {
     localStorage.removeItem("user");
     localStorage.removeItem("token");
     setUser(null);
+  };
+
+  // ---------- profile ----------
+  const updateProfile = async (changes) => {
+    if (USE_API) await profileApi.update(changes);
+    const next = { ...user, ...changes };
+    localStorage.setItem("user", JSON.stringify(next));
+    setUser(next);
+  };
+  const changePassword = async (current, next) => {
+    if (USE_API) await profileApi.changePassword(current, next);
+    // mock mode: nothing to change, any password is accepted
   };
 
   // ---------- products ----------
@@ -101,7 +114,7 @@ export function AppProvider({ children }) {
 
   return (
     <Ctx.Provider value={{
-      user, login, register, logout, loading, error,
+      user, login, register, logout, updateProfile, changePassword, loading, error,
       products, saveProduct, deleteProduct,
       sales, completeSale,
       expenses, addExpense,

@@ -5,7 +5,7 @@ const BASE = import.meta.env.VITE_API_URL || "";
 const errorText = (d) =>
   Array.isArray(d.detail) ? d.detail.map((x) => `${x.loc?.slice(-1)[0]}: ${x.msg}`).join(", ") : d.detail || d.message || d.error;
 
-async function request(path, { method = "GET", body } = {}) {
+export async function request(path, { method = "GET", body } = {}) {
   const token = localStorage.getItem("token");
   const isForm = body instanceof URLSearchParams; // FastAPI OAuth2PasswordRequestForm login
   const res = await fetch(BASE + path, {
