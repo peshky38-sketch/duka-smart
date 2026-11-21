@@ -2,6 +2,8 @@ import { createContext, useContext, useEffect, useState } from "react";
 import { PRODUCTS, SALES, EXPENSES } from "../data/mock";
 import { api, USE_API } from "../services/api";
 import { profileApi } from "../services/profile";
+import { supplierApi } from "../services/suppliers";
+import { SUPPLIERS } from "../data/suppliers";
 import { sum } from "../utils";
 
 const Ctx = createContext();
@@ -16,6 +18,7 @@ export function AppProvider({ children }) {
   const [products, setProducts] = useState(USE_API ? [] : PRODUCTS);
   const [sales, setSales] = useState(USE_API ? [] : SALES);
   const [expenses, setExpenses] = useState(USE_API ? [] : EXPENSES);
+  const [suppliers, setSuppliers] = useState(USE_API ? [] : SUPPLIERS);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -27,6 +30,12 @@ export function AppProvider({ children }) {
       .then(([p, s, e]) => { setProducts(p); setSales(s); setExpenses(e); setError(""); })
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false));
+  }, [user]);
+
+  // Suppliers load separately so a missing suppliers endpoint never breaks the rest of the app
+  useEffect(() => {
+    if (!USE_API || !user) return;
+    supplierApi.list().then(setSuppliers).catch(() => {});
   }, [user]);
 
   // ---------- auth ----------
@@ -102,6 +111,20 @@ export function AppProvider({ children }) {
     return sale;
   };
 
+  // ---------- suppliers ----------
+  const saveSupplier = async (s) => {
+    if (USE_API) {
+      const saved = s.id ? await supplierApi.update(s.id, s) : await supplierApi.create(s);
+      setSuppliers((l) => (s.id ? l.map((x) => (x.id === saved.id ? saved : x)) : [...l, saved]));
+      return;
+    }
+    setSuppliers((l) => (s.id ? l.map((x) => (x.id === s.id ? s : x)) : [...l, { ...s, id: Date.now() }]));
+  };
+  const deleteSupplier = async (id) => {
+    if (USE_API) await supplierApi.remove(id);
+    setSuppliers((l) => l.filter((x) => x.id !== id));
+  };
+
   // ---------- expenses ----------
   const addExpense = async (e) => {
     if (USE_API) {
@@ -118,6 +141,7 @@ export function AppProvider({ children }) {
       products, saveProduct, deleteProduct,
       sales, completeSale,
       expenses, addExpense,
+      suppliers, saveSupplier, deleteSupplier,
     }}>
       {children}
     </Ctx.Provider>

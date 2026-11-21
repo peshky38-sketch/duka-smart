@@ -5,9 +5,9 @@ import ProductForm from "../components/ProductForm.jsx";
 const TABS = ["All products", "Grocery", "Drinks", "Bakery", "Household"];
 
 export default function Inventory() {
-  const { products, saveProduct, deleteProduct } = useApp();
+  const { products, saveProduct, deleteProduct, loading } = useApp();
   const [tab, setTab] = useState("All products");
-  const [form, setForm] = useState(null); // null = closed, {} = add, product = edit
+  const [form, setForm] = useState(null); // null = closed, {} = add, {scan:true} = add via barcode, product = edit
 
   const shown = tab === "All products" ? products : products.filter((p) => p.category === tab);
   const low = products.filter(isLow).length;
@@ -30,7 +30,7 @@ export default function Inventory() {
           <p className="muted">Everything on your shelves, with alerts when it runs low.</p>
         </div>
         <div className="actions">
-          <button className="btn out">Scan barcode</button>
+          <button className="btn out" onClick={() => setForm({ scan: true })}>Scan barcode</button>
           <button className="btn" onClick={() => setForm({})}>+ Add product</button>
         </div>
       </div>
@@ -63,7 +63,7 @@ export default function Inventory() {
               const pct = Math.min(100, (p.qty / (p.minStock * 3)) * 100);
               return (
                 <tr key={p.id}>
-                  <td>{p.emoji} <b>{p.name}</b><br /><small className="muted">{p.sku}</small></td>
+                  <td>{p.emoji} <b>{p.name}</b><br /><small className="muted">{p.sku}{p.barcode ? ` · ${p.barcode}` : ""}</small></td>
                   <td className="muted">{p.category}</td>
                   <td>
                     <div className="stock">
@@ -81,6 +81,9 @@ export default function Inventory() {
                 </tr>
               );
             })}
+            {shown.length === 0 && (
+              <tr><td colSpan="7" className="muted">{loading ? "Loading products..." : "No products here yet. Tap Add product to start."}</td></tr>
+            )}
           </tbody>
         </table>
       </div>
@@ -88,6 +91,7 @@ export default function Inventory() {
       {form && (
         <ProductForm
           product={form.id ? form : null}
+          scan={form.scan}
           onSave={saveProduct}
           onClose={() => setForm(null)}
         />

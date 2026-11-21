@@ -4,7 +4,7 @@ import { useApp, isOut } from "../context/AppContext.jsx";
 const TABS = ["All", "Grocery", "Drinks", "Bakery", "Household"];
 
 export default function Sales() {
-  const { products, sales, completeSale } = useApp();
+  const { products, sales, completeSale, loading } = useApp();
   const [tab, setTab] = useState("All");
   const [search, setSearch] = useState("");
   const [cart, setCart] = useState({}); // { productId: qty }
@@ -18,7 +18,7 @@ export default function Sales() {
   );
   const lines = Object.keys(cart).map((id) => ({ ...products.find((p) => p.id === Number(id)), qty: cart[id] }));
   const total = lines.reduce((s, l) => s + l.price * l.qty, 0);
-  const nextId = Math.max(...sales.map((s) => s.id)) + 1;
+  const nextId = Math.max(0, ...sales.map((s) => s.id)) + 1;
 
   // A sale cannot exceed available stock
   const add = (p) => {
@@ -32,6 +32,20 @@ export default function Sales() {
     else if (n <= p.qty) next[p.id] = n;
     setCart(next);
   };
+
+  // Barcode scanners type the code and press Enter: add the matching product straight to the sale
+  const onSearchKey = (e) => {
+    if (e.key !== "Enter" || !search.trim()) return;
+    const q = search.trim().toLowerCase();
+    const hit =
+      products.find((p) => p.barcode === search.trim() || p.sku.toLowerCase() === q || p.name.toLowerCase() === q) ||
+      (shown.length === 1 ? shown[0] : null);
+    if (hit && !isOut(hit)) {
+      add(hit);
+      setSearch("");
+    }
+  };
+
   const complete = async () => {
     if (!lines.length) return;
     try {
@@ -48,7 +62,7 @@ export default function Sales() {
       <div className="top">
         <div>
           <h1>New sale</h1>
-          <p className="muted">Tap products to add them. Pick how the customer pays.</p>
+          <p className="muted">Tap products to add them, or scan a barcode. Pick how the customer pays.</p>
         </div>
       </div>
 
@@ -56,7 +70,7 @@ export default function Sales() {
 
       <div className="pos">
         <div>
-          <input className="search" placeholder="Search or scan a product" value={search} onChange={(e) => setSearch(e.target.value)} />
+          <input className="search" placeholder="Search or scan a product" value={search} onChange={(e) => setSearch(e.target.value)} onKeyDown={onSearchKey} />
           <div className="tabs">
             {TABS.map((t) => (
               <button key={t} className={t === tab ? "on" : ""} onClick={() => setTab(t)}>{t}</button>
@@ -71,6 +85,7 @@ export default function Sales() {
               </button>
             ))}
           </div>
+          {shown.length === 0 && <p className="muted">{loading ? "Loading products..." : "No products found."}</p>}
         </div>
 
         <div className="card">
