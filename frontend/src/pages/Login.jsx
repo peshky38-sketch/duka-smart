@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { login } from "../api";
 import logo from "../assets/logo.svg";
 import "./Auth.css";
 
@@ -6,8 +8,10 @@ function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [busy, setBusy] = useState(false);
+  const navigate = useNavigate();
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault();
 
     if (!email || !password) {
@@ -16,8 +20,15 @@ function Login() {
     }
 
     setError("");
-    // api call will go here once the backend is ready
-    console.log("login", email, password);
+    setBusy(true);
+    try {
+      await login(email, password);
+      navigate("/dashboard");
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setBusy(false);
+    }
   }
 
   return (
@@ -62,7 +73,7 @@ function Login() {
 
           {error && <p className="auth-error">{error}</p>}
 
-          <button type="submit" className="auth-btn">
+          <button type="submit" className="auth-btn" disabled={busy}>
             Log in
           </button>
 

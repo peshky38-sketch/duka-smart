@@ -1,5 +1,8 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { login, register } from "../api";
 import logo from "../assets/logo.svg";
+import { Select } from "../components/Select";
 import "./Auth.css";
 
 function Register() {
@@ -8,12 +11,17 @@ function Register() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
+  const [phone, setPhone] = useState("");
+  const [address, setAddress] = useState("");
+  const [type, setType] = useState("Retail shop");
   const [error, setError] = useState("");
+  const [busy, setBusy] = useState(false);
+  const navigate = useNavigate();
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault();
 
-    if (!name || !shopName || !email || !password || !confirm) {
+    if (!name || !shopName || !email || !phone || !address || !password || !confirm) {
       setError("Please fill in all the fields");
       return;
     }
@@ -27,8 +35,29 @@ function Register() {
     }
 
     setError("");
-    // api call will go here once the backend is ready
-    console.log("register", name, shopName, email, password);
+    setBusy(true);
+    try {
+      await register({
+        username: name,
+        email: email,
+        password: password,
+        business_name: shopName,
+        business_type: type,
+        business_email: email,
+        phone_number: phone,
+        business_address: address,
+        currency: "KES",
+        // the backend insists on a logo; uploading one is not built yet
+        business_logo: "logo.svg",
+      });
+      await login(email, password);
+      localStorage.setItem("duka_business", shopName);
+      navigate("/dashboard");
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setBusy(false);
+    }
   }
 
   return (
@@ -68,6 +97,27 @@ function Register() {
             onChange={(e) => setShopName(e.target.value)}
           />
 
+          <label htmlFor="type">Type of business</label>
+          <Select id="type" value={type} onChange={setType} options={["Retail shop", "Wholesale", "Kiosk", "Salon or barber", "Hardware", "Other"]} />
+
+          <label htmlFor="phone">Business phone</label>
+          <input
+            id="phone"
+            type="tel"
+            placeholder="e.g. 0712 345 678"
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+          />
+
+          <label htmlFor="address">Location</label>
+          <input
+            id="address"
+            type="text"
+            placeholder="e.g. Gikomba Market, Nairobi"
+            value={address}
+            onChange={(e) => setAddress(e.target.value)}
+          />
+
           <label htmlFor="email">Email</label>
           <input
             id="email"
@@ -97,8 +147,8 @@ function Register() {
 
           {error && <p className="auth-error">{error}</p>}
 
-          <button type="submit" className="auth-btn">
-            Create account
+          <button type="submit" className="auth-btn" disabled={busy}>
+            {busy ? "Creating..." : "Create account"}
           </button>
 
           <p className="auth-switch">
