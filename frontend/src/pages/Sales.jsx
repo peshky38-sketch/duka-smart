@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import TopNav from "../components/TopNav";
 import Footer from "../components/Footer";
 import Status from "../components/Status";
@@ -99,6 +100,10 @@ function Sales() {
   const todayKey = new Date().toDateString();
   const todays = shop.sales.filter((x) => new Date(x.createdAt + "Z").toDateString() === todayKey);
   const todaysTotal = todays.reduce((s, x) => s + x.total, 0);
+  const average = todays.length ? Math.round(todaysTotal / todays.length) : 0;
+  const byPay = {};
+  todays.forEach((x) => (byPay[x.payment] = (byPay[x.payment] || 0) + 1));
+  const payNote = Object.entries(byPay).map(([m, n]) => m + " " + n).join(" · ") || "No sales yet";
 
   return (
     <div className="dash">
@@ -110,13 +115,38 @@ function Sales() {
         <div className="dash-top">
           <div>
             <h1>New sale</h1>
-            <p className="dash-sub">Tap a product to add it. Today: {formatKES(todaysTotal)} from {todays.length} {todays.length === 1 ? "sale" : "sales"}</p>
+            <p className="dash-sub">Tap a product to add it, then take the payment.</p>
           </div>
-          <input className="t-search" placeholder="Search products" value={search} onChange={(e) => setSearch(e.target.value)} />
         </div>
 
+        <section className="kpis compact" aria-label="Today">
+          <div className="kpi primary">
+            <span className="k-label">Sales today</span>
+            <strong>{formatKES(todaysTotal)}</strong>
+            <span className="k-note">{todays.length} {todays.length === 1 ? "sale" : "sales"} so far</span>
+          </div>
+          <div className="kpi">
+            <span className="k-label">Average sale</span>
+            <strong>{formatKES(average)}</strong>
+            <span className="k-note">Per customer today</span>
+          </div>
+          <div className="kpi">
+            <span className="k-label">Paid by</span>
+            <strong className="k-small">{payNote}</strong>
+            <span className="k-note">Sales by payment method</span>
+          </div>
+          <div className="kpi">
+            <span className="k-label">In this sale</span>
+            <strong>{itemCount}</strong>
+            <span className="k-note">{itemCount === 0 ? "Nothing added yet" : formatKES(total) + " so far"}</span>
+          </div>
+        </section>
+
         <div className="till">
-          <section>
+          <section className="panel picker">
+            <div className="picker-top">
+              <input className="t-search" placeholder="Search products" value={search} onChange={(e) => setSearch(e.target.value)} />
+            </div>
             <div className="chips">
               {categories.map((c) => (
                 <button key={c} className={c === category ? "chip on" : "chip"} onClick={() => setCategory(c)}>{c}</button>
@@ -212,7 +242,7 @@ function Sales() {
         )}
 
         <div className="panel today-panel">
-          <h2>Today's sales</h2>
+          <div className="g-head"><h2>Today's sales</h2><Link to="/transactions" className="g-link">See all</Link></div>
           {todays.length === 0 && <p className="empty">No sales yet today.</p>}
           {todays.length > 0 && (
             <table className="stack">

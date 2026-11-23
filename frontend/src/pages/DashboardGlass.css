@@ -3,15 +3,6 @@
 .g-sentence a { color: var(--green); font-weight: 600; }
 
 /* ---- layout: three tiers, one 16px grid ---- */
-.kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
-.kpi { display: flex; flex-direction: column; gap: 4px; padding: 20px 22px; border-radius: 14px; background: #fff; border: 1px solid rgba(106, 74, 42, 0.14); box-shadow: 0 8px 20px rgba(106, 74, 42, 0.09); }
-.kpi .k-label { font-size: 13px; color: var(--mute); font-weight: 600; }
-.kpi strong { font-size: 28px; letter-spacing: -0.5px; line-height: 1.15; }
-.kpi .k-note { font-size: 12.5px; color: var(--mute); margin-top: 2px; }
-.kpi.primary { background: #12805c; border-color: #12805c; color: #fff; box-shadow: 0 12px 26px rgba(18, 128, 92, 0.32); }
-.kpi.primary .k-label, .kpi.primary .k-note { color: rgba(255, 255, 255, 0.85); }
-.kpi.primary strong { font-size: 32px; }
-
 .split { display: grid; grid-template-columns: 2fr 1fr; gap: 16px; margin-bottom: 24px; align-items: stretch; }
 .panel { padding: 24px; }
 .g-sub { margin: 2px 0 0; font-size: 13px; color: var(--mute); }
@@ -61,11 +52,6 @@
 
 
 @media (max-width: 900px) {
-  .kpis { grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
-  .kpi { padding: 16px; }
-  .kpi strong { font-size: 22px; }
-  .kpi.primary, .kpi:last-child { grid-column: 1 / -1; }
-  .kpi.primary strong { font-size: 30px; }
   .split { grid-template-columns: 1fr; margin-bottom: 20px; }
   .panel { padding: 20px; }
   .wk-chart { height: 160px; gap: 8px; }

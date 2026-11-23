@@ -2,11 +2,14 @@
 .t-search { min-width: 240px; padding: 10px 14px; border-radius: 8px; border: 1px solid var(--line); background: #fff; font-size: 15px; color: var(--ink); outline: none; }
 .t-search:focus { border-color: var(--green); }
 
-.till { display: grid; grid-template-columns: 1fr 380px; gap: 18px; align-items: start; margin-bottom: 20px; }
+.till { display: grid; grid-template-columns: 1fr 380px; gap: 16px; align-items: start; margin-bottom: 24px; }
+.picker { padding: 20px; }
+.picker-top { margin-bottom: 14px; }
+.picker-top .t-search { width: 100%; box-sizing: border-box; }
 
 .chips { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
 .chip { border: 1px solid var(--line); background: #fff; border-radius: 999px; padding: 7px 15px; font-size: 14px; color: var(--ink); cursor: pointer; }
-.chip.on { background: var(--ink); color: white; border-color: var(--ink); }
+.chip.on { background: #0b3d2e; color: white; border-color: #0b3d2e; }
 
 .tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; }
 .tile {
@@ -151,10 +154,10 @@
 .change.short { background: rgba(217, 72, 43, 0.14); }
 .change b { font-size: 17px; }
 
-.charge { width: 100%; margin-top: 14px; padding: 15px; border: 0; border-radius: 10px; font-size: 17px; font-weight: 700; color: white; cursor: pointer; background: var(--green); }
-.charge:hover:not(:disabled) { background: var(--green-dark); }
-.charge:active:not(:disabled) { transform: scale(0.98); }
-.charge:disabled { background: #b9c9c0; cursor: not-allowed; }
+.charge { width: 100%; margin-top: 14px; padding: 15px; border: 0; border-radius: 12px; font-size: 17px; font-weight: 700; color: #2b1d00; cursor: pointer; background: #f2a93b; box-shadow: 0 4px 0 rgba(0, 0, 0, 0.16); transition: background 0.15s, transform 0.1s; }
+.charge:hover:not(:disabled) { background: #f6b955; }
+.charge:active:not(:disabled) { transform: translateY(2px); box-shadow: 0 2px 0 rgba(0, 0, 0, 0.16); }
+.charge:disabled { background: #e3dcc9; color: #8d836a; box-shadow: none; cursor: not-allowed; }
 
 /* receipt pop-up */
 .receipt { text-align: center; max-width: 400px; }
@@ -170,6 +173,13 @@
 @media (max-width: 1000px) {
   .till { grid-template-columns: 1fr; }
   .t-search { min-width: 0; width: 100%; }
+}
+
+/* phone: only the main number, so the products come first */
+@media (max-width: 900px) {
+  .kpis.compact .kpi:not(.primary) { display: none; }
+  .kpis.compact .kpi.primary { padding: 14px 18px; }
+  .kpis.compact .kpi.primary strong { font-size: 26px; }
 }
 
 /* phone: two columns of tiles, cart in a sheet from the bottom */
