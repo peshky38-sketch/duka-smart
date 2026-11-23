@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import Sidebar from "../components/Sidebar";
+import TopNav from "../components/TopNav";
+import Footer from "../components/Footer";
 import Status from "../components/Status";
 import { useToast } from "../components/Toast";
 import { useShop } from "../useShop";
@@ -53,6 +54,16 @@ function Dashboard() {
     week.push({ label: day.toLocaleDateString([], { weekday: "short" }), total: sum(salesOn(day), "total"), today: n === 0 });
   }
   const maxDay = Math.max(1, ...week.map((d) => d.total));
+  const weekTotal = week.reduce((n, d) => n + d.total, 0);
+
+  // best sellers over the last 7 days, by units sold
+  const weekStart = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 6);
+  const units = {};
+  shop.sales
+    .filter((x) => when(x.createdAt) >= weekStart)
+    .forEach((x) => x.items.forEach((i) => (units[i.name] = (units[i.name] || 0) + i.quantity)));
+  const best = Object.entries(units).map(([name, n]) => ({ name, n })).sort((a, b) => b.n - a.n).slice(0, 5);
+  const bestMax = Math.max(1, ...best.map((b) => b.n));
 
   const lowStock = shop.products
     .filter((p) => p.quantity <= p.threshold)
@@ -77,11 +88,9 @@ function Dashboard() {
     }
   }
 
-  const initials = (user.username || "?").split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase();
-
   return (
-    <div className="dash">
-      <Sidebar active="Dashboard" />
+    <div className="dash shop">
+      <TopNav active="Dashboard" />
 
       <main className="dash-main">
         <Status loading={shop.loading} error={shop.error} />
@@ -93,10 +102,6 @@ function Dashboard() {
               {now.toLocaleDateString([], { weekday: "long", day: "numeric", month: "long" })}
               {user.business ? " · " + user.business : ""}
             </p>
-          </div>
-          <div className="g-actions">
-            <Link to="/sales" className="pill-btn g-new">New sale</Link>
-            <div className="avatar">{initials}</div>
           </div>
         </div>
 
@@ -111,18 +116,42 @@ function Dashboard() {
           </p>
         )}
 
-        <div className="g-hero">
-          <div className="g-big">
-            <span className="g-label">Sales today</span>
-            <div className="g-number">{formatKES(salesTotal)}</div>
-            {change !== null ? (
-              <span className="g-badge">{change < 0 ? "Down " : "Up "}{Math.abs(change)}% on yesterday</span>
-            ) : (
-              <span className="g-badge">Last 7 days</span>
-            )}
-            <div className="g-spark">
+        {/* 1. the numbers that matter most, side by side */}
+        <section className="kpis" aria-label="Today">
+          <div className="kpi primary">
+            <span className="k-label">Sales today</span>
+            <strong>{formatKES(salesTotal)}</strong>
+            <span className="k-note">
+              {change !== null ? (change < 0 ? "Down " : "Up ") + Math.abs(change) + "% on yesterday" : salesToday.length + (salesToday.length === 1 ? " sale" : " sales") + " so far"}
+            </span>
+          </div>
+          <div className="kpi">
+            <span className="k-label">Profit today</span>
+            <strong>{formatKES(profitToday)}</strong>
+            <span className="k-note">Sales minus what the stock cost</span>
+          </div>
+          <div className="kpi">
+            <span className="k-label">Spent today</span>
+            <strong>{formatKES(spentToday)}</strong>
+            <span className="k-note">Rent, stock, transport and so on</span>
+          </div>
+          <div className="kpi">
+            <span className="k-label">Products</span>
+            <strong>{shop.products.length}</strong>
+            <span className="k-note">{outCount > 0 ? outCount + " out of stock" : "All in stock"}</span>
+          </div>
+        </section>
+
+        {/* 2. how the week went, and what needs attention */}
+        <section className="split">
+          <div className="panel week">
+            <div className="g-head">
+              <div><h2>Sales this week</h2><p className="g-sub">{formatKES(weekTotal)} in the last 7 days</p></div>
+            </div>
+            <div className="wk-chart">
               {week.map((d, i) => (
-                <div className="g-col" key={d.label + i} title={d.label + ": " + formatKES(d.total)}>
+                <div className="wk-col" key={d.label + i} title={d.label + ": " + formatKES(d.total)}>
+                  <b>{d.total > 0 ? formatKES(d.total) : ""}</b>
                   <span className={d.today ? "today" : ""} style={{ height: Math.max(4, (d.total / maxDay) * 100) + "%" }} />
                   <small>{d.label}</small>
                 </div>
@@ -130,24 +159,13 @@ function Dashboard() {
             </div>
           </div>
 
-          <div className="g-side">
-            <div className="g-mini"><span>Profit today</span><strong>{formatKES(profitToday)}</strong></div>
-            <div className="g-mini"><span>Spent today</span><strong>{formatKES(spentToday)}</strong></div>
-            <div className="g-mini">
-              <span>Products</span>
-              <strong>{shop.products.length}{outCount > 0 && <em> · {outCount} out of stock</em>}</strong>
-            </div>
-          </div>
-        </div>
-
-        <div className="g-row">
-          <div className="panel">
+          <div className="panel chalk">
             <div className="g-head">
               <h2>Running low</h2>
               {lowStock.length > 0 && <button className="g-link" onClick={() => setShowRestock(true)}>Restock list</button>}
             </div>
             {lowStock.length === 0 && <p className="empty">Nothing is running low.</p>}
-            {lowStock.slice(0, 6).map((p, i) => {
+            {lowStock.slice(0, 5).map((p) => {
               const pct = Math.min(100, Math.round((p.quantity / Math.max(1, p.threshold * 2)) * 100));
               const out = p.quantity === 0;
               return (
@@ -159,11 +177,14 @@ function Dashboard() {
               );
             })}
           </div>
+        </section>
 
-          <div className="panel">
+        {/* 3. the detail: every sale, and what sells best */}
+        <section className="split">
+          <div className="panel paper">
             <div className="g-head"><h2>Latest sales</h2><Link to="/transactions" className="g-link">See all</Link></div>
             {recent.length === 0 && <p className="empty">Sales will show up here.</p>}
-            {recent.map((s, i) => (
+            {recent.map((s) => (
               <div className="g-sale" key={s.id}>
                 <div>
                   <strong>{shortCode(s.number)} · {s.items.map((x) => x.name).join(", ")}</strong>
@@ -173,10 +194,24 @@ function Dashboard() {
               </div>
             ))}
           </div>
-        </div>
+
+          <div className="panel best">
+            <div className="g-head"><div><h2>Best sellers</h2><p className="g-sub">Units sold, last 7 days</p></div></div>
+            {best.length === 0 && <p className="empty">Sell something and your best sellers will show here.</p>}
+            {best.map((b, i) => (
+              <div className="bs-row" key={b.name}>
+                <span className="bs-rank">{i + 1}</span>
+                <div className="bs-main">
+                  <div><strong>{b.name}</strong><b>{b.n}</b></div>
+                  <div className="bs-bar"><i style={{ width: (b.n / bestMax) * 100 + "%" }} /></div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
       </main>
 
-      <Link to="/sales" className="pill-btn g-fab">New sale</Link>
+      <Footer />
 
       {showRestock && (
         <div className="overlay" onClick={() => setShowRestock(false)}>

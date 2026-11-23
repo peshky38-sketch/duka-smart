@@ -1,5 +1,6 @@
 import { useState } from "react";
-import Sidebar from "../components/Sidebar";
+import TopNav from "../components/TopNav";
+import Footer from "../components/Footer";
 import Status from "../components/Status";
 import { useToast } from "../components/Toast";
 import PayIcon from "../components/PayIcon";
@@ -101,7 +102,7 @@ function Sales() {
 
   return (
     <div className="dash">
-      <Sidebar active="Sales" />
+      <TopNav active="Sales" />
 
       <main className="dash-main">
         <Status loading={shop.loading} error={shop.error} />
@@ -233,6 +234,8 @@ function Sales() {
           )}
         </div>
       </main>
+
+      <Footer />
 
       {receipt && (
         <div className="overlay" onClick={() => setReceipt(null)}>

@@ -4,7 +4,7 @@
   --mute: #52736a;
   --green: #12805c;
   --green-dark: #0e6b4d;
-  --line: #dbe7df;
+  --line: #e6dcc6;
   --amber: #f2a93b;
   --red: #d9482b;
   --glass: rgba(255, 255, 255, 0.72);
@@ -14,12 +14,21 @@
 }
 
 body {
-  background: #f1f6f2;
+  background: #f4ecda;
   color: var(--ink);
   font-family: "Segoe UI", system-ui, Arial, sans-serif;
 }
 
-.dash { background: transparent !important; }
+/* the wall of the shop behind every page */
+.dash {
+  display: flex !important;
+  flex-direction: column;
+  min-height: 100vh;
+  background:
+    repeating-linear-gradient(90deg, rgba(106, 74, 42, 0.045) 0 2px, transparent 2px 120px),
+    linear-gradient(180deg, #f3ead8 0%, #f8f1e2 55%, #efe3cb 100%) !important;
+  background-attachment: fixed !important;
+}
 
 /* cards: white, a thin border, almost no shadow */
 .stat-card,
@@ -30,8 +39,8 @@ body {
 .toolbar {
   background: #fff !important;
   border: 1px solid var(--line) !important;
-  box-shadow: 0 1px 2px rgba(11, 61, 46, 0.04) !important;
-  border-radius: 12px !important;
+  box-shadow: 0 8px 20px rgba(106, 74, 42, 0.09) !important;
+  border-radius: 14px !important;
 }
 
 @keyframes fade { from { opacity: 0; } to { opacity: 1; } }
@@ -132,14 +141,15 @@ button:disabled { opacity: 0.6; cursor: wait; }
 
 /* one consistent page layout */
 .dash-main { max-width: 1240px; margin: 0 auto; box-sizing: border-box; width: 100%; padding: 28px 36px; }
-.dash-top { margin-bottom: 22px; gap: 16px; }
+.dash > .dash-main { flex: 1 0 auto; }
+.dash-top { margin-bottom: 20px; gap: 16px; }
 .dash-top h1 { font-size: 26px; letter-spacing: -0.2px; }
 .dash-sub { font-size: 15px; }
-.stat-grid { grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 14px; margin-bottom: 18px; }
+.stat-grid { grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 16px; margin-bottom: 24px; }
 .stat-card { padding: 18px 20px; gap: 6px; }
 .stat-label { font-size: 13px; }
 .stat-value { font-size: 26px; font-weight: 700; }
-.panel { padding: 20px; }
+.panel { padding: 24px; }
 .panel h2 { font-size: 17px; margin: 0 0 12px; }
 
 /* tables */
@@ -155,11 +165,11 @@ th {
   border-bottom: 1px solid var(--line);
   white-space: nowrap;
 }
-td { padding: 13px 12px; border-bottom: 1px solid #eef3ef; font-size: 14px; }
+td { padding: 13px 12px; border-bottom: 1px solid #f0e8d6; font-size: 14px; }
 td:first-child { min-width: 150px; }
 tbody tr:last-child td { border-bottom: 0; }
 tbody tr { transition: background 0.12s; }
-tbody tr:hover { background: #f5faf7; }
+tbody tr:hover { background: #fbf6ea; }
 
 /* form fields look the same everywhere */
 input[type="text"],
@@ -186,8 +196,7 @@ textarea:focus { outline: none; border-color: var(--green); box-shadow: 0 0 0 3p
 
 /* phones */
 @media (max-width: 900px) {
-  .dash { display: block; }
-  .dash-main { padding: 16px 16px 96px; max-width: none; }
+  .dash-main { padding: 16px 16px 8px; max-width: none; }
   .dash-top { flex-direction: row; flex-wrap: wrap; gap: 10px 12px; align-items: flex-start; justify-content: space-between; }
   .dash-top > div:first-child { flex: 1 1 150px; min-width: 0; }
   .dash-top > button,

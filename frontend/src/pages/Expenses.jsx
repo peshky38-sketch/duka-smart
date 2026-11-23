@@ -1,5 +1,6 @@
 import { useState } from "react";
-import Sidebar from "../components/Sidebar";
+import TopNav from "../components/TopNav";
+import Footer from "../components/Footer";
 import { Select, ComboInput } from "../components/Select";
 import Status from "../components/Status";
 import PayIcon from "../components/PayIcon";
@@ -94,7 +95,7 @@ function Expenses() {
 
   return (
     <div className="dash">
-      <Sidebar active="Expenses" />
+      <TopNav active="Expenses" />
 
       <main className="dash-main">
         <Status loading={loading} error={error} />
@@ -210,6 +211,8 @@ function Expenses() {
           )}
         </div>
       </main>
+
+      <Footer />
     </div>
   );
 }

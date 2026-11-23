@@ -1,5 +1,6 @@
 import { Fragment, useState } from "react";
-import Sidebar from "../components/Sidebar";
+import TopNav from "../components/TopNav";
+import Footer from "../components/Footer";
 import { Select, ComboInput } from "../components/Select";
 import Status from "../components/Status";
 import PayIcon from "../components/PayIcon";
@@ -96,7 +97,7 @@ function Transactions() {
 
   return (
     <div className="dash">
-      <Sidebar active="Transactions" />
+      <TopNav active="Transactions" />
 
       <main className="dash-main">
         <Status loading={shop.loading} error={shop.error} />
@@ -232,6 +233,8 @@ function Transactions() {
           )}
         </div>
       </main>
+
+      <Footer />
     </div>
   );
 }

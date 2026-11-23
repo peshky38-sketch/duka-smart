@@ -58,7 +58,7 @@
 @keyframes badge-pop { from { transform: scale(0.4); } to { transform: scale(1); } }
 
 /* cart */
-.cart { position: sticky; top: 12px; padding: 18px; border-radius: 12px; background: #fff; border: 1px solid var(--line); }
+.cart { position: sticky; top: 88px; padding: 18px; border-radius: 12px; background: #fff; border: 1px solid var(--line); }
 .sheet-close, .cartbar, .sheet-backdrop { display: none; }
 .cart h2 { margin: 0 0 10px; font-size: 18px; display: flex; align-items: center; gap: 8px; }
 .count { background: var(--green); color: white; border-radius: 99px; font-size: 12px; padding: 2px 9px; }
@@ -190,7 +190,7 @@
     position: fixed;
     left: 12px;
     right: 12px;
-    bottom: calc(68px + env(safe-area-inset-bottom));
+    bottom: calc(94px + env(safe-area-inset-bottom));
     z-index: 35;
     padding: 14px 16px;
     border: 0;

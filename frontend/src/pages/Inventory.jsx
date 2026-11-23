@@ -1,5 +1,6 @@
 import { useState } from "react";
-import Sidebar from "../components/Sidebar";
+import TopNav from "../components/TopNav";
+import Footer from "../components/Footer";
 import { Select, ComboInput } from "../components/Select";
 import Status from "../components/Status";
 import { useShop } from "../useShop";
@@ -136,7 +137,7 @@ function Inventory() {
 
   return (
     <div className="dash">
-      <Sidebar active="Inventory" />
+      <TopNav active="Inventory" />
 
       <main className="dash-main">
         <div className="dash-top">
@@ -227,6 +228,8 @@ function Inventory() {
           )}
         </div>
       </main>
+
+      <Footer />
 
       {showForm && (
         <div className="overlay" onClick={() => setShowForm(false)}>

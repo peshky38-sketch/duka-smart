@@ -1,31 +1,40 @@
-.g-actions { display: flex; align-items: center; gap: 14px; }
-.g-new { color: white; text-decoration: none; padding: 10px 18px; border-radius: 8px; font-weight: 600; font-size: 15px; }
-
 .g-sentence { font-size: 17px; line-height: 1.6; margin: 0 0 18px; }
 .g-sentence b { font-weight: 600; }
 .g-sentence a { color: var(--green); font-weight: 600; }
 
-.g-hero { display: grid; grid-template-columns: 1.5fr 1fr; gap: 14px; margin-bottom: 14px; }
+/* ---- layout: three tiers, one 16px grid ---- */
+.kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
+.kpi { display: flex; flex-direction: column; gap: 4px; padding: 20px 22px; border-radius: 14px; background: #fff; border: 1px solid rgba(106, 74, 42, 0.14); box-shadow: 0 8px 20px rgba(106, 74, 42, 0.09); }
+.kpi .k-label { font-size: 13px; color: var(--mute); font-weight: 600; }
+.kpi strong { font-size: 28px; letter-spacing: -0.5px; line-height: 1.15; }
+.kpi .k-note { font-size: 12.5px; color: var(--mute); margin-top: 2px; }
+.kpi.primary { background: #12805c; border-color: #12805c; color: #fff; box-shadow: 0 12px 26px rgba(18, 128, 92, 0.32); }
+.kpi.primary .k-label, .kpi.primary .k-note { color: rgba(255, 255, 255, 0.85); }
+.kpi.primary strong { font-size: 32px; }
 
-.g-big { padding: 22px; border-radius: 12px; color: white; background: #0b3d2e; }
-.g-label { font-size: 14px; opacity: 0.8; }
-.g-number { font-size: 40px; font-weight: 700; margin: 4px 0 6px; }
-.g-badge { font-size: 14px; opacity: 0.85; }
+.split { display: grid; grid-template-columns: 2fr 1fr; gap: 16px; margin-bottom: 24px; align-items: stretch; }
+.panel { padding: 24px; }
+.g-sub { margin: 2px 0 0; font-size: 13px; color: var(--mute); }
 
-.g-spark { display: flex; align-items: flex-end; gap: 10px; height: 110px; margin-top: 18px; }
-.g-col { flex: 1; height: 100%; display: flex; flex-direction: column; justify-content: flex-end; gap: 6px; }
-.g-col span { display: block; background: rgba(255, 255, 255, 0.35); border-radius: 4px 4px 0 0; transform-origin: bottom; animation: grow 0.5s ease both; }
-.g-col span.today { background: #fff; }
-.g-col small { text-align: center; font-size: 11px; opacity: 0.75; }
-@keyframes grow { from { transform: scaleY(0); } to { transform: scaleY(1); } }
+/* this week, as a chart */
+.wk-chart { display: flex; align-items: flex-end; gap: 14px; height: 190px; padding-top: 8px; }
+.wk-col { flex: 1; height: 100%; display: flex; flex-direction: column; justify-content: flex-end; align-items: stretch; gap: 6px; min-width: 0; }
+.wk-col b { font-size: 11px; text-align: center; color: var(--mute); font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-height: 14px; }
+.wk-col span { display: block; border-radius: 6px 6px 2px 2px; background: #cfe5d8; transform-origin: bottom; animation: grow 0.5s ease both; transition: background 0.15s; }
+.wk-col span.today { background: #12805c; }
+.wk-col:hover span { background: #0e6b4d; }
+.wk-col small { text-align: center; font-size: 12px; color: var(--mute); }
 
-.g-side { display: grid; gap: 10px; }
-.g-mini { display: flex; flex-direction: column; justify-content: center; gap: 2px; padding: 14px 18px; border-radius: 12px; background: #fff; border: 1px solid var(--line); }
-.g-mini span { font-size: 13px; color: var(--mute); }
-.g-mini strong { font-size: 24px; }
-.g-mini em { font-style: normal; font-size: 13px; font-weight: 400; color: var(--mute); }
+/* best sellers */
+.bs-row { display: flex; align-items: center; gap: 14px; padding: 10px 0; }
+.bs-rank { width: 26px; height: 26px; flex: none; border-radius: 50%; background: #e3f2ea; color: #12805c; font-weight: 700; font-size: 13px; display: grid; place-items: center; }
+.bs-row:first-of-type .bs-rank { background: #f2a93b; color: #2b1d00; }
+.bs-main { flex: 1; min-width: 0; }
+.bs-main > div:first-child { display: flex; justify-content: space-between; gap: 10px; font-size: 14px; }
+.bs-main strong { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bs-bar { height: 6px; border-radius: 99px; background: #eef3ee; margin-top: 6px; overflow: hidden; }
+.bs-bar i { display: block; height: 100%; border-radius: 99px; background: #12805c; }
 
-.g-row { display: grid; grid-template-columns: 1.1fr 1fr; gap: 14px; }
 .g-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
 .g-head h2 { margin: 0; }
 .g-link { background: none; border: 0; color: var(--green); font-weight: 600; cursor: pointer; font-size: 14px; text-decoration: none; padding: 4px 0; }
@@ -50,26 +59,71 @@
 .g-restock small { display: block; color: var(--mute); font-size: 12px; }
 .g-restock b { background: rgba(18, 128, 92, 0.12); border-radius: 6px; padding: 3px 10px; }
 
-.g-fab { display: none; }
 
 @media (max-width: 900px) {
-  .g-hero, .g-row { grid-template-columns: 1fr; }
-  .g-number { font-size: 34px; }
+  .kpis { grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
+  .kpi { padding: 16px; }
+  .kpi strong { font-size: 22px; }
+  .kpi.primary, .kpi:last-child { grid-column: 1 / -1; }
+  .kpi.primary strong { font-size: 30px; }
+  .split { grid-template-columns: 1fr; margin-bottom: 20px; }
+  .panel { padding: 20px; }
+  .wk-chart { height: 160px; gap: 8px; }
+  .wk-col b { display: none; }
   .g-sentence { font-size: 16px; }
-  .g-new, .g-actions .avatar { display: none; }
-  .g-side { grid-template-columns: 1fr 1fr; }
-  .g-side .g-mini:last-child { grid-column: 1 / -1; }
-  .g-fab {
-    display: block;
-    position: fixed;
-    right: 16px;
-    bottom: calc(74px + env(safe-area-inset-bottom));
-    z-index: 30;
-    padding: 14px 22px;
-    border-radius: 999px;
-    color: #fff;
-    text-decoration: none;
-    font-weight: 600;
-    box-shadow: 0 6px 18px rgba(11, 61, 46, 0.3);
-  }
 }
+
+/* ---- the shop look: chalkboard and receipt (the wall and wood come from theme.css) ---- */
+.shop .dash-top h1 { color: #0b3d2e; }
+.shop .dash-sub { color: #6a5a3c; }
+.shop .g-sentence { color: #3d3526; }
+.shop .panel:not(.chalk):not(.paper) { background: #fff !important; border-color: rgba(106, 74, 42, 0.14) !important; box-shadow: 0 8px 20px rgba(106, 74, 42, 0.09) !important; }
+
+/* low stock on a chalkboard */
+.shop .panel.chalk {
+  background: #22362e !important;
+  border: 8px solid #b98550 !important;
+  border-radius: 8px !important;
+  color: #eef3ec;
+  box-shadow: 0 14px 26px rgba(106, 74, 42, 0.28), inset 0 0 40px rgba(0, 0, 0, 0.25) !important;
+  font-family: "Segoe Print", "Bradley Hand", "Comic Sans MS", cursive;
+  position: relative;
+}
+.chalk h2 { color: #fff; font-size: 20px; letter-spacing: 0.02em; }
+.chalk .g-link { color: #f2d27a; font-family: inherit; }
+.chalk .g-link:hover { text-decoration: underline wavy; }
+.chalk .g-stock { border-bottom: 1px dashed rgba(255, 255, 255, 0.22); font-size: 16px; }
+.chalk .g-stock:last-child { border-bottom: 0; }
+.chalk .g-meter { background: rgba(255, 255, 255, 0.12); height: 6px; }
+.chalk .g-meter i.low { background: #f2d27a; }
+.chalk .g-meter i.out { background: #ef8a73; }
+.chalk .tag { background: transparent !important; color: #f2d27a !important; border: 1px dashed rgba(242, 210, 122, 0.6); font-family: inherit; }
+.chalk .tag-out { color: #ef8a73 !important; border-color: rgba(239, 138, 115, 0.7); }
+.chalk .empty { color: #cfe3d6; }
+
+/* latest sales on a paper receipt */
+.shop .panel.paper {
+  background: #fffdf8 !important;
+  border: 0 !important;
+  border-radius: 4px 4px 0 0 !important;
+  box-shadow: 0 12px 24px rgba(106, 74, 42, 0.16) !important;
+  position: relative;
+  margin-bottom: 14px;
+  font-family: "SF Mono", "Menlo", "Consolas", monospace;
+}
+.paper::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -14px;
+  height: 14px;
+  background: linear-gradient(-45deg, transparent 8px, #fffdf8 0) 0 0 / 16px 14px, linear-gradient(45deg, transparent 8px, #fffdf8 0) 0 0 / 16px 14px;
+  background-repeat: repeat-x;
+  filter: drop-shadow(0 6px 4px rgba(106, 74, 42, 0.12));
+}
+.paper h2 { text-transform: uppercase; letter-spacing: 0.12em; font-size: 14px; }
+.paper .g-sale { border-bottom: 1px dashed rgba(106, 74, 42, 0.3); }
+.paper .g-sale strong { font-weight: 700; font-size: 13px; }
+.paper .g-link { font-family: inherit; }
+

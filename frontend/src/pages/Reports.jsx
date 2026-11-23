@@ -1,5 +1,6 @@
 import { useState } from "react";
-import Sidebar from "../components/Sidebar";
+import TopNav from "../components/TopNav";
+import Footer from "../components/Footer";
 import Status from "../components/Status";
 import { useShop } from "../useShop";
 import { formatKES } from "../utils/formatMoney";
@@ -129,7 +130,7 @@ function Reports() {
 
   return (
     <div className="dash">
-      <Sidebar active="Reports" />
+      <TopNav active="Reports" />
 
       <main className="dash-main">
         <Status loading={shop.loading} error={shop.error} />
@@ -314,6 +315,8 @@ function Reports() {
           </div>
         </div>
       </main>
+
+      <Footer />
     </div>
   );
 }
