@@ -1,95 +1,85 @@
 import { useState } from "react";
 import Sidebar from "../components/Sidebar";
+import Status from "../components/Status";
+import { useShop } from "../useShop";
 import { formatKES } from "../utils/formatMoney";
 import "./Dashboard.css";
 import "./Reports.css";
 
-// sample numbers for now, will come from the api later
-const data = {
-  week: {
-    title: "This week",
-    labels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
-    sales: [5200, 4600, 6100, 5400, 8200, 9300, 7000],
-    cost: [3400, 3000, 4000, 3500, 5300, 6000, 4500],
-    expenses: [900, 600, 1100, 700, 1500, 800, 600],
-    topProducts: [
-      { name: "Unga Jogoo 2kg", units: 62 },
-      { name: "Sugar 1kg", units: 48 },
-      { name: "Milk 500ml", units: 44 },
-      { name: "Bread (white)", units: 39 },
-      { name: "Cooking oil 1L", units: 21 },
-    ],
-    expenseCategories: [
-      { name: "Wages", amount: 2000 },
-      { name: "Utilities", amount: 1500 },
-      { name: "Transport", amount: 1100 },
-      { name: "Other", amount: 1600 },
-    ],
-    payments: [
-      { name: "Cash", percent: 52 },
-      { name: "M-Pesa", percent: 41 },
-      { name: "Card", percent: 7 },
-    ],
-  },
-  month: {
-    title: "This month",
-    labels: ["Week 1", "Week 2", "Week 3", "Week 4"],
-    sales: [41000, 46500, 43200, 55700],
-    cost: [26600, 30100, 28100, 36400],
-    expenses: [16500, 3200, 4100, 5850],
-    topProducts: [
-      { name: "Unga Jogoo 2kg", units: 268 },
-      { name: "Sugar 1kg", units: 205 },
-      { name: "Milk 500ml", units: 190 },
-      { name: "Bread (white)", units: 166 },
-      { name: "Cooking oil 1L", units: 92 },
-    ],
-    expenseCategories: [
-      { name: "Rent", amount: 15000 },
-      { name: "Wages", amount: 8000 },
-      { name: "Transport", amount: 2400 },
-      { name: "Utilities", amount: 1500 },
-      { name: "Other", amount: 2750 },
-    ],
-    payments: [
-      { name: "Cash", percent: 49 },
-      { name: "M-Pesa", percent: 44 },
-      { name: "Card", percent: 7 },
-    ],
-  },
-  year: {
-    title: "This year",
-    labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov"],
-    sales: [150000, 142000, 168000, 159000, 171000, 163000, 177000, 181000, 169000, 178000, 186400],
-    cost: [97500, 92300, 109200, 103400, 111100, 106000, 115000, 117700, 109900, 115700, 121200],
-    expenses: [27000, 26500, 31000, 28000, 29500, 28800, 30200, 31500, 29000, 30100, 29650],
-    topProducts: [
-      { name: "Unga Jogoo 2kg", units: 2810 },
-      { name: "Sugar 1kg", units: 2240 },
-      { name: "Milk 500ml", units: 2050 },
-      { name: "Bread (white)", units: 1790 },
-      { name: "Cooking oil 1L", units: 980 },
-    ],
-    expenseCategories: [
-      { name: "Rent", amount: 165000 },
-      { name: "Wages", amount: 88000 },
-      { name: "Transport", amount: 26400 },
-      { name: "Utilities", amount: 16500 },
-      { name: "Other", amount: 25350 },
-    ],
-    payments: [
-      { name: "Cash", percent: 47 },
-      { name: "M-Pesa", percent: 46 },
-      { name: "Card", percent: 7 },
-    ],
-  },
-};
+const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+// builds the week, month and year figures from the real sales and expenses
+function buildData(shop) {
+  const when = (iso) => new Date(iso + "Z");
+  const now = new Date();
+  const buying = {};
+  shop.products.forEach((p) => (buying[p.id] = p.buying));
+
+  const sales = shop.sales.map((x) => ({
+    date: when(x.createdAt),
+    total: x.total,
+    payment: x.payment,
+    cost: x.items.reduce((sum, i) => sum + (buying[i.productId] || 0) * i.quantity, 0),
+    items: x.items,
+  }));
+  const expenses = shop.expenses.map((x) => ({ date: when(x.createdAt), amount: x.amount, category: x.category }));
+
+  function period(title, labels, inRange, bucket) {
+    const out = { title, labels, sales: labels.map(() => 0), cost: labels.map(() => 0), expenses: labels.map(() => 0) };
+    const units = {};
+    const cats = {};
+    const pay = {};
+    sales.filter((x) => inRange(x.date)).forEach((x) => {
+      const i = bucket(x.date);
+      out.sales[i] += x.total;
+      out.cost[i] += x.cost;
+      pay[x.payment] = (pay[x.payment] || 0) + 1;
+      x.items.forEach((it) => (units[it.name] = (units[it.name] || 0) + it.quantity));
+    });
+    expenses.filter((x) => inRange(x.date)).forEach((x) => {
+      out.expenses[bucket(x.date)] += x.amount;
+      cats[x.category] = (cats[x.category] || 0) + x.amount;
+    });
+    out.topProducts = Object.entries(units)
+      .map(([name, u]) => ({ name, units: u }))
+      .sort((a, b) => b.units - a.units)
+      .slice(0, 5);
+    out.expenseCategories = Object.entries(cats).map(([name, amount]) => ({ name, amount }));
+    const count = Object.values(pay).reduce((a, b) => a + b, 0);
+    out.payments = Object.entries(pay).map(([name, n]) => ({ name, percent: Math.round((n / count) * 100) }));
+    return out;
+  }
+
+  // Monday of this week
+  const monday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - ((now.getDay() + 6) % 7));
+  const weekLabels = DAYS;
+  const monthWeeks = Math.ceil(new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate() / 7);
+
+  return {
+    week: period("This week", weekLabels, (d) => d >= monday, (d) => (d.getDay() + 6) % 7),
+    month: period(
+      "This month",
+      Array.from({ length: monthWeeks }, (_, i) => "Week " + (i + 1)),
+      (d) => d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth(),
+      (d) => Math.floor((d.getDate() - 1) / 7)
+    ),
+    year: period(
+      "This year",
+      MONTHS.slice(0, now.getMonth() + 1),
+      (d) => d.getFullYear() === now.getFullYear(),
+      (d) => d.getMonth()
+    ),
+  };
+}
 
 function sum(list) {
   return list.reduce((a, b) => a + b, 0);
 }
 
 function Reports() {
+  const shop = useShop();
+  const data = buildData(shop);
   const [period, setPeriod] = useState("month");
   const d = data[period];
 
@@ -100,7 +90,7 @@ function Reports() {
   const netProfit = grossProfit - expenses;
 
   // the tallest bar decides how tall the others are
-  const maxValue = Math.max(...d.sales, ...d.expenses);
+  const maxValue = Math.max(1, ...d.sales, ...d.expenses);
 
   // profit for each day / week / month, for the line chart
   const profits = d.sales.map((sale, i) => sale - d.cost[i] - d.expenses[i]);
@@ -121,7 +111,7 @@ function Reports() {
   }
 
   // best sellers
-  const mostSold = Math.max(...d.topProducts.map((p) => p.units));
+  const mostSold = Math.max(1, ...d.topProducts.map((p) => p.units));
 
   // expense breakdown for the donut chart
   const colours = ["#12805c", "#3eb489", "#b7ead3", "#f2a93b", "#d9482b"];
@@ -129,7 +119,7 @@ function Reports() {
   let startAt = 0;
   const slices = d.expenseCategories.map((c, i) => {
     const share = (c.amount / expenseTotal) * 100;
-    const slice = colours[i] + " " + startAt + "% " + (startAt + share) + "%";
+    const slice = colours[i % colours.length] + " " + startAt + "% " + (startAt + share) + "%";
     startAt += share;
     return slice;
   });
@@ -142,6 +132,8 @@ function Reports() {
       <Sidebar active="Reports" />
 
       <main className="dash-main">
+        <Status loading={shop.loading} error={shop.error} />
+
         <div className="dash-top">
           <div>
             <h1>Reports</h1>
