@@ -1,6 +1,7 @@
 import { Fragment, useState } from "react";
 import TopNav from "../components/TopNav";
 import Footer from "../components/Footer";
+import PageSkeleton from "../components/PageSkeleton";
 import { Select, ComboInput } from "../components/Select";
 import Status from "../components/Status";
 import PayIcon from "../components/PayIcon";
@@ -94,6 +95,8 @@ function Transactions() {
     setSearch("");
     setPage(1);
   }
+
+  if (shop.loading) return <PageSkeleton active="Transactions" kind="list" />;
 
   return (
     <div className="dash">

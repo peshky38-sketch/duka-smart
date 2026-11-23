@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import TopNav from "../components/TopNav";
 import Footer from "../components/Footer";
+import PageSkeleton from "../components/PageSkeleton";
 import Status from "../components/Status";
 import { useToast } from "../components/Toast";
 import PayIcon from "../components/PayIcon";
@@ -104,6 +105,8 @@ function Sales() {
   const byPay = {};
   todays.forEach((x) => (byPay[x.payment] = (byPay[x.payment] || 0) + 1));
   const payNote = Object.entries(byPay).map(([m, n]) => m + " " + n).join(" · ") || "No sales yet";
+
+  if (shop.loading) return <PageSkeleton active="Sales" kind="till" />;
 
   return (
     <div className="dash">

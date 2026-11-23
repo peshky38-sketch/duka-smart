@@ -1,6 +1,7 @@
 import { useState } from "react";
 import TopNav from "../components/TopNav";
 import Footer from "../components/Footer";
+import PageSkeleton from "../components/PageSkeleton";
 import Status from "../components/Status";
 import { useShop } from "../useShop";
 import { formatKES } from "../utils/formatMoney";
@@ -127,6 +128,8 @@ function Reports() {
   const donutStyle = { background: "conic-gradient(" + slices.join(", ") + ")" };
 
   const points = profits.map((p, i) => getX(i) + "," + getY(p)).join(" ");
+
+  if (shop.loading) return <PageSkeleton active="Reports" kind="dashboard" />;
 
   return (
     <div className="dash">

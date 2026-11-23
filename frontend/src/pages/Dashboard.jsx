@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import TopNav from "../components/TopNav";
 import Footer from "../components/Footer";
+import PageSkeleton from "../components/PageSkeleton";
 import Status from "../components/Status";
 import { useToast } from "../components/Toast";
 import { useShop } from "../useShop";
@@ -87,6 +88,8 @@ function Dashboard() {
       toast("Could not copy the list", "error");
     }
   }
+
+  if (shop.loading) return <PageSkeleton active="Dashboard" kind="dashboard" />;
 
   return (
     <div className="dash shop">

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import TopNav from "../components/TopNav";
 import Footer from "../components/Footer";
+import PageSkeleton from "../components/PageSkeleton";
 import { Select, ComboInput } from "../components/Select";
 import Status from "../components/Status";
 import { useShop } from "../useShop";
@@ -134,6 +135,8 @@ function Inventory() {
   const inStock = products.filter((p) => getStatus(p) === "in").length;
   const lowStock = products.filter((p) => getStatus(p) === "low").length;
   const outOfStock = products.filter((p) => getStatus(p) === "out").length;
+
+  if (loading) return <PageSkeleton active="Inventory" kind="list" />;
 
   return (
     <div className="dash">

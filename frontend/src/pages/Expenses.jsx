@@ -1,6 +1,7 @@
 import { useState } from "react";
 import TopNav from "../components/TopNav";
 import Footer from "../components/Footer";
+import PageSkeleton from "../components/PageSkeleton";
 import { Select, ComboInput } from "../components/Select";
 import Status from "../components/Status";
 import PayIcon from "../components/PayIcon";
@@ -92,6 +93,8 @@ function Expenses() {
       biggestAmount = totals[c];
     }
   }
+
+  if (loading) return <PageSkeleton active="Expenses" kind="list" />;
 
   return (
     <div className="dash">
