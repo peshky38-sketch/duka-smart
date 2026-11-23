@@ -1,84 +1,108 @@
-/* sign in and sign up. 8px spacing grid, 12px radius on fields and buttons, 16px on cards */
+/* sign in and sign up: the front of a shop. 8px spacing grid, 12px radius on fields and buttons, 20px on the card */
 .au-page {
-  min-height: 100vh;
-  display: grid;
-  grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
-  background: #fff;
-  font-family: "Segoe UI", system-ui, Arial, sans-serif;
-  color: var(--ink);
-}
-
-/* ---- left: the pitch ---- */
-.au-show {
+  --stripe-a: #12805c;
+  --stripe-b: #e8f4ec;
+  --scallop: 36px;
   position: relative;
+  min-height: 100vh;
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  gap: 32px;
-  padding: 40px 56px 40px;
-  color: #fff;
+  font-family: "Segoe UI", system-ui, Arial, sans-serif;
+  color: var(--ink);
   background:
-    radial-gradient(60% 50% at 85% 8%, rgba(62, 180, 137, 0.35), transparent 70%),
-    radial-gradient(50% 40% at 0% 100%, rgba(18, 128, 92, 0.5), transparent 70%),
-    #0b3d2e;
+    repeating-linear-gradient(90deg, rgba(11, 61, 46, 0.03) 0 2px, transparent 2px 120px),
+    linear-gradient(180deg, #f3ead8 0%, #f8f1e2 55%, #efe3cb 100%);
 }
-.au-show::before {
+
+/* the awning, same stripes as the logo */
+.au-awning {
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 92px;
+  z-index: 2;
+  background: repeating-linear-gradient(90deg, var(--stripe-a) 0 72px, var(--stripe-b) 72px 144px);
+  box-shadow: 0 6px 0 rgba(11, 61, 46, 0.08);
+}
+.au-awning::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 100%;
+  height: var(--scallop);
+  background:
+    radial-gradient(circle at 36px 0, var(--stripe-a) 35px, transparent 36px) 0 0 / 144px var(--scallop) repeat-x,
+    radial-gradient(circle at 108px 0, var(--stripe-b) 35px, transparent 36px) 0 0 / 144px var(--scallop) repeat-x;
+  filter: drop-shadow(0 6px 4px rgba(11, 61, 46, 0.18));
+}
+.au-awning::before {
   content: "";
   position: absolute;
   inset: 0;
-  background-image: radial-gradient(rgba(255, 255, 255, 0.09) 1px, transparent 1px);
-  background-size: 24px 24px;
-  mask-image: linear-gradient(180deg, #000, transparent 75%);
-  -webkit-mask-image: linear-gradient(180deg, #000, transparent 75%);
-  pointer-events: none;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.18), transparent 40%, rgba(0, 0, 0, 0.08));
+  z-index: 1;
 }
-.au-show > * { position: relative; }
 
-.au-brand { display: flex; align-items: center; gap: 12px; font-size: 22px; }
-.au-brand b { font-weight: 400; color: #b7ead3; }
-.au-brand span { font-weight: 800; letter-spacing: -0.2px; }
+/* the sign that sways */
+.au-sign { position: absolute; z-index: 3; top: 118px; right: 12%; width: 120px; height: 90px; transform-origin: 50% 0; animation: au-sway 5s ease-in-out infinite; }
+.au-sign .string { position: absolute; top: -26px; width: 2px; height: 36px; background: #6a4a2a; }
+.au-sign .string.l { left: 22px; }
+.au-sign .string.r { right: 22px; }
+.au-sign .board { position: absolute; inset: 10px 0 0 0; background: #fff; border: 3px solid #12805c; border-radius: 14px; display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: 0 8px 16px rgba(11, 61, 46, 0.18); }
+.au-sign small { font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--mute); }
+.au-sign strong { font-size: 26px; letter-spacing: 0.08em; color: var(--green); }
+@keyframes au-sway { 0%, 100% { transform: rotate(2.5deg); } 50% { transform: rotate(-2.5deg); } }
 
-.au-pitch { max-width: 480px; margin-top: 24px; }
-.au-pitch h1 { margin: 0 0 16px; font-size: 44px; line-height: 1.1; letter-spacing: -1px; font-weight: 800; }
-.au-pitch p { margin: 0; font-size: 17px; line-height: 1.6; color: #c9e9da; max-width: 420px; }
-
-/* a small picture of the product */
-.au-stage { position: relative; flex: 1; min-height: 280px; max-width: 520px; }
-.au-card {
-  position: absolute;
-  background: rgba(255, 255, 255, 0.96);
-  color: var(--ink);
-  border-radius: 16px;
-  padding: 16px 18px;
-  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.25);
-  animation: au-float 7s ease-in-out infinite;
+/* things in the shop */
+.au-decor { position: absolute; inset: 0; z-index: 1; pointer-events: none; }
+.au-left, .au-right { position: absolute; bottom: 64px; display: flex; align-items: flex-end; gap: 12px; }
+.au-left { left: 4%; flex-direction: column; align-items: flex-start; gap: 0; }
+.au-right { right: 3%; }
+.au-crate { width: 210px; height: auto; margin-left: 12px; }
+.au-shelf { width: 250px; height: auto; }
+.au-plant { width: 74px; height: auto; align-self: flex-end; }
+.au-chalk {
+  position: relative;
+  width: 160px;
+  padding: 14px 16px 12px;
+  margin-bottom: 12px;
+  background: #22362e;
+  border: 6px solid #b98550;
+  border-radius: 6px;
+  color: #eef3ec;
+  font-family: "Segoe Print", "Bradley Hand", "Comic Sans MS", cursive;
+  font-size: 14px;
+  line-height: 1.7;
+  transform: rotate(-2deg);
+  box-shadow: 0 10px 18px rgba(11, 61, 46, 0.2);
 }
-.au-card strong { display: block; font-size: 15px; }
-.au-lab { display: block; font-size: 12px; color: var(--mute); }
-.c-sales { left: 0; top: 8px; width: 270px; }
-.c-sales strong { font-size: 28px; letter-spacing: -0.5px; margin: 2px 0 4px; }
-.au-up { font-size: 12px; font-weight: 600; color: var(--green); }
-.au-bars { display: flex; align-items: flex-end; gap: 6px; height: 56px; margin-top: 14px; }
-.au-bars i { flex: 1; background: #cfe9dc; border-radius: 4px 4px 2px 2px; }
-.au-bars i.now { background: var(--green); }
-.c-stock { right: 0; top: 0; display: flex; align-items: center; gap: 12px; animation-delay: -2.5s; }
-.au-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--amber); box-shadow: 0 0 0 4px rgba(242, 169, 59, 0.25); }
-.c-pay { right: 24px; bottom: 8px; display: flex; align-items: center; gap: 14px; animation-delay: -4.5s; }
-.c-pay img { height: 26px; width: auto; }
-@keyframes au-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+.au-chalk b { display: block; font-size: 16px; border-bottom: 1px dashed rgba(255, 255, 255, 0.4); margin-bottom: 4px; }
+.au-chalk span { display: block; }
+.au-chalk i { font-style: normal; color: #f2a93b; letter-spacing: 2px; }
 
-.au-points { list-style: none; margin: 0; padding: 20px 0 0; display: flex; flex-wrap: wrap; gap: 12px 28px; border-top: 1px solid rgba(255, 255, 255, 0.14); font-size: 14px; color: #c9e9da; }
-.au-points li { display: flex; align-items: center; gap: 8px; }
-.au-points li::before { content: ""; width: 16px; height: 16px; border-radius: 50%; background: rgba(123, 224, 180, 0.2) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M4 8.5l2.7 2.7L12 5.5' fill='none' stroke='%237be0b4' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / 14px no-repeat; }
+/* the counter along the bottom */
+.au-counter { position: absolute; inset: auto 0 0 0; height: 64px; z-index: 1; background: linear-gradient(180deg, #c8955a, #b98550); border-top: 6px solid #d9a96c; box-shadow: 0 -10px 24px rgba(11, 61, 46, 0.08); }
+.au-counter::after { content: ""; position: absolute; inset: 0; background: repeating-linear-gradient(90deg, transparent 0 180px, rgba(106, 74, 42, 0.25) 180px 182px); }
 
-/* ---- right: the form ---- */
-.au-main { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 32px; background: #fff; }
-.au-mobile-brand { display: none; }
-.au-box { width: 100%; max-width: 400px; }
-.au-box.wide { max-width: 560px; }
+/* ---- the form, on the counter ---- */
+.au-main { position: relative; z-index: 4; flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 136px 24px 80px; }
+.au-box {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 440px;
+  padding: 28px 36px 28px;
+  background: #fff;
+  border-radius: 20px;
+  box-shadow: 0 24px 60px rgba(11, 61, 46, 0.22), 0 0 0 1px rgba(11, 61, 46, 0.06);
+}
+.au-box.wide { max-width: 640px; }
+.au-logo { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; font-size: 22px; font-weight: 800; letter-spacing: -0.2px; }
+.au-logo b { font-weight: 400; color: var(--green); }
+.au-foot { margin: 16px 0 0; font-size: 14px; color: #6a5a3c; text-align: center; }
 
 .au-head h2 { margin: 0 0 8px; font-size: 32px; line-height: 1.2; letter-spacing: -0.5px; }
-.au-head p { margin: 0 0 32px; font-size: 16px; color: var(--mute); line-height: 1.5; }
+.au-head p { margin: 0 0 24px; font-size: 16px; color: var(--mute); line-height: 1.5; }
 
 .au-form { display: grid; gap: 20px; }
 .au-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px 16px; }
@@ -130,19 +154,21 @@
 .au-alt { display: flex; align-items: center; justify-content: center; height: 48px; border: 1px solid #cfdcd4; border-radius: 12px; color: var(--ink); font-weight: 600; text-decoration: none; transition: background 0.15s, border-color 0.15s; }
 .au-alt:hover { background: #f1f8f4; border-color: var(--green); }
 
-/* ---- phones and small tablets ---- */
-@media (max-width: 900px) {
-  .au-page { grid-template-columns: 1fr; }
-  .au-show { display: none; }
-  .au-main { justify-content: flex-start; padding: 32px 20px 40px; min-height: 100vh; }
-  .au-mobile-brand { display: flex; align-items: center; gap: 10px; align-self: flex-start; margin-bottom: 40px; font-size: 20px; font-weight: 800; }
-  .au-mobile-brand b { font-weight: 400; color: var(--green); }
+/* ---- smaller screens ---- */
+@media (max-width: 1180px) { .au-left, .au-right { display: none; } }
+@media (max-width: 700px) {
+  .au-page { --scallop: 24px; }
+  .au-awning { height: 56px; background: repeating-linear-gradient(90deg, var(--stripe-a) 0 48px, var(--stripe-b) 48px 96px); }
+  .au-awning::after {
+    background:
+      radial-gradient(circle at 24px 0, var(--stripe-a) 23px, transparent 24px) 0 0 / 96px var(--scallop) repeat-x,
+      radial-gradient(circle at 72px 0, var(--stripe-b) 23px, transparent 24px) 0 0 / 96px var(--scallop) repeat-x;
+  }
+  .au-sign { display: none; }
+  .au-main { padding: 104px 16px 88px; justify-content: flex-start; }
+  .au-box { padding: 28px 22px 24px; border-radius: 18px; }
   .au-head h2 { font-size: 28px; }
   .au-grid { grid-template-columns: 1fr; }
+  .au-counter { height: 40px; }
 }
-@media (max-width: 1100px) and (min-width: 901px) {
-  .au-show { padding: 32px; }
-  .au-pitch h1 { font-size: 36px; }
-  .au-stage { transform: scale(0.88); transform-origin: top left; }
-}
-@media (prefers-reduced-motion: reduce) { .au-card { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .au-sign { animation: none; } }
