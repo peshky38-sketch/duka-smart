@@ -1,0 +1,144 @@
+/* top menu on computers, floating bar at the bottom on phones */
+.topnav {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  background: #0b3d2e;
+  box-shadow: 0 6px 18px rgba(11, 61, 46, 0.28);
+}
+.tn-inner { max-width: 1240px; margin: 0 auto; height: 68px; padding: 0 36px; display: flex; align-items: center; gap: 28px; }
+
+.tn-logo { display: flex; align-items: center; gap: 10px; text-decoration: none; color: #fff; font-size: 20px; font-weight: 800; letter-spacing: -0.2px; flex: none; }
+.tn-logo b { font-weight: 400; color: #7be0b4; }
+.tn-logo img { transition: transform 0.4s var(--spring); }
+.tn-logo:hover img { transform: rotate(-8deg) scale(1.08); }
+
+.tn-tabs { display: flex; gap: 2px; flex: 1; min-width: 0; }
+.tn-tabs a {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 14px;
+  border-radius: 10px;
+  color: rgba(255, 255, 255, 0.78);
+  text-decoration: none;
+  font-size: 14.5px;
+  white-space: nowrap;
+  transition: background 0.15s, color 0.15s;
+}
+.tn-tabs a svg { width: 19px; height: 19px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.tn-tabs a:hover:not(.on) { background: rgba(255, 255, 255, 0.1); color: #fff; }
+.tn-tabs a.on { background: rgba(255, 255, 255, 0.15); color: #fff; font-weight: 700; }
+.tn-tabs a.on::after { content: ""; position: absolute; left: 14px; right: 14px; bottom: -13px; height: 3px; border-radius: 3px 3px 0 0; background: #f2a93b; }
+
+.tn-badge { box-shadow: 0 0 0 2px #0b3d2e; font-style: normal; background: var(--red); color: #fff; border-radius: 99px; font-size: 11px; font-weight: 700; line-height: 1; padding: 3px 6px; }
+.tn-tabs .tn-badge { position: absolute; top: 2px; right: 0; }
+
+.tn-right { display: flex; align-items: center; gap: 12px; flex: none; }
+.tn-new { display: flex; align-items: center; gap: 8px; padding: 10px 16px; border-radius: 10px; background: #f2a93b; color: #2b1d00; text-decoration: none; font-weight: 700; font-size: 14.5px; white-space: nowrap; transition: background 0.15s, transform 0.1s; box-shadow: 0 4px 0 rgba(0, 0, 0, 0.18); }
+.tn-new:hover { background: #f6b955; }
+.tn-new:active { transform: scale(0.98); }
+.tn-new svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; }
+
+.tn-pop { position: relative; }
+.tn-icon { position: relative; width: 40px; height: 40px; display: grid; place-items: center; border: 1px solid rgba(255, 255, 255, 0.22); border-radius: 10px; background: rgba(255, 255, 255, 0.08); cursor: pointer; color: #fff; transition: border-color 0.15s, background 0.15s; }
+.tn-icon:hover { border-color: #7be0b4; background: rgba(255, 255, 255, 0.14); }
+.tn-icon svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.tn-icon .tn-badge { position: absolute; top: -6px; right: -6px; }
+.tn-avatar { width: 40px; height: 40px; border-radius: 50%; border: 2px solid rgba(255, 255, 255, 0.5); background: #b7ead3; color: #0b3d2e; font: inherit; font-weight: 700; font-size: 14px; cursor: pointer; display: grid; place-items: center; }
+.tn-avatar.big { border-color: #fff; box-shadow: 0 0 0 1px var(--line); }
+.tn-avatar.big { width: 44px; height: 44px; cursor: default; }
+
+.tn-card {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  width: 280px;
+  padding: 14px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.94);
+  -webkit-backdrop-filter: blur(18px);
+  backdrop-filter: blur(18px);
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  box-shadow: 0 18px 40px rgba(60, 40, 15, 0.22), 0 0 0 1px var(--line);
+  animation: pop-in 0.2s var(--ease) both;
+  z-index: 60;
+}
+.tn-card strong { display: block; font-size: 15px; }
+.tn-card p { margin: 8px 0 0; color: var(--mute); font-size: 14px; }
+.tn-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #f0e8d6; font-size: 14px; gap: 10px; }
+.tn-row b { font-size: 12px; padding: 3px 9px; border-radius: 999px; }
+.tn-row b.low { background: #fdebc8; color: #8a5a00; }
+.tn-row b.out { background: #fbe0d9; color: #a5301a; }
+.tn-more { display: block; margin-top: 10px; text-align: center; padding: 10px; border-radius: 10px; background: #e3f2ea; color: var(--green); font-weight: 600; text-decoration: none; font-size: 14px; }
+.tn-more:hover { background: #d3eadc; }
+.tn-me { display: flex; align-items: center; gap: 12px; padding-bottom: 12px; border-bottom: 1px solid #f0e8d6; }
+.tn-me span { display: block; font-size: 13px; color: var(--mute); }
+.tn-out { display: flex; align-items: center; gap: 10px; margin-top: 8px; padding: 10px; border-radius: 10px; color: #a5301a; text-decoration: none; font-weight: 600; font-size: 14px; }
+.tn-out:hover { background: #fbe0d9; }
+.tn-out svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
+
+/* smaller laptops: icons only, so the six tabs still fit */
+@media (max-width: 1180px) {
+  .tn-inner { padding: 0 20px; gap: 16px; }
+  .tn-tabs a span { display: none; }
+  .tn-tabs a { padding: 10px 13px; }
+  .tn-tabs a.on span { display: inline; }
+}
+
+.tabbar, .more-backdrop { display: none; }
+
+/* ---- phones and small tablets ---- */
+@media (max-width: 900px) {
+  .tn-inner { height: 56px; padding: 0 16px; }
+  .tn-tabs, .tn-new { display: none; }
+  .tn-right { margin-left: auto; }
+  .tn-card { position: fixed; top: 64px; right: 12px; left: 12px; width: auto; }
+
+  .tabbar {
+    display: grid;
+    grid-template-columns: 1fr 1fr 76px 1fr 1fr;
+    align-items: end;
+    position: fixed;
+    left: 10px;
+    right: 10px;
+    bottom: calc(10px + env(safe-area-inset-bottom));
+    z-index: 45;
+    padding: 8px 4px 6px;
+    border-radius: 22px;
+    background: rgba(255, 255, 255, 0.96);
+    -webkit-backdrop-filter: blur(16px);
+    backdrop-filter: blur(16px);
+    border: 1px solid var(--line);
+    box-shadow: 0 12px 28px rgba(60, 40, 15, 0.22);
+  }
+  .tab {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    padding: 6px 0;
+    border: 0;
+    background: none;
+    font: inherit;
+    font-size: 11px;
+    color: #7b9087;
+    text-decoration: none;
+    cursor: pointer;
+    min-height: 48px;
+  }
+  .tab svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+  .tab.on { color: var(--green); font-weight: 700; }
+  .tab .tn-badge { position: absolute; top: 2px; left: 50%; margin-left: 6px; }
+  .tab.sell { justify-content: flex-end; }
+  .sell-btn { width: 56px; height: 56px; border-radius: 50%; background: var(--green); display: grid; place-items: center; margin-top: -30px; border: 4px solid #fff; box-shadow: 0 8px 18px rgba(18, 128, 92, 0.4); }
+  .sell-btn svg { stroke: #fff; width: 26px; height: 26px; }
+  .tab.sell.on .sell-btn { background: var(--green-dark); }
+
+  .more-backdrop { display: block; position: fixed; inset: 0; z-index: 44; background: rgba(11, 61, 46, 0.3); }
+  .more-sheet { position: absolute; left: 12px; right: 12px; bottom: calc(92px + env(safe-area-inset-bottom)); background: #fff; border-radius: 16px; box-shadow: 0 12px 30px rgba(60, 40, 15, 0.25); overflow: hidden; }
+  .more-sheet a { display: block; padding: 16px 18px; color: var(--ink); text-decoration: none; font-size: 16px; border-bottom: 1px solid #f0e8d6; }
+  .more-sheet a:last-child { border-bottom: 0; color: #a5301a; }
+}

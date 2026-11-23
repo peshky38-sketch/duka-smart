@@ -1,32 +1,31 @@
 import { useState } from "react";
-import Sidebar from "../components/Sidebar";
+import TopNav from "../components/TopNav";
+import Footer from "../components/Footer";
+import PageSkeleton from "../components/PageSkeleton";
+import { Select, ComboInput } from "../components/Select";
+import Status from "../components/Status";
+import { useShop } from "../useShop";
+import { useToast } from "../components/Toast";
+import { del, ensureCategory, ensureSupplier, post, put } from "../api";
 import { formatKES } from "../utils/formatMoney";
 import "./Dashboard.css";
 import "./Inventory.css";
 
 function Inventory() {
-  // sample products for now, will come from the api later
-  const [products, setProducts] = useState([
-    { id: 1, name: "Sugar 1kg", sku: "SUG-001", category: "Groceries", supplier: "Baraka Foods", buying: 150, selling: 180, quantity: 4, threshold: 25 },
-    { id: 2, name: "Unga Jogoo 2kg", sku: "UNG-002", category: "Groceries", supplier: "Baraka Foods", buying: 190, selling: 220, quantity: 7, threshold: 20 },
-    { id: 3, name: "Cooking oil 1L", sku: "OIL-003", category: "Groceries", supplier: "Mwananchi Traders", buying: 260, selling: 310, quantity: 3, threshold: 15 },
-    { id: 4, name: "Bar soap", sku: "SOP-004", category: "Household", supplier: "Mwananchi Traders", buying: 40, selling: 60, quantity: 0, threshold: 30 },
-    { id: 5, name: "Milk 500ml", sku: "MLK-005", category: "Dairy", supplier: "Fresh Dairy Ltd", buying: 55, selling: 65, quantity: 48, threshold: 20 },
-    { id: 6, name: "Bread (white)", sku: "BRD-006", category: "Bakery", supplier: "Daily Bakers", buying: 55, selling: 65, quantity: 22, threshold: 10 },
-    { id: 7, name: "Eggs (tray)", sku: "EGG-007", category: "Dairy", supplier: "Fresh Dairy Ltd", buying: 380, selling: 450, quantity: 12, threshold: 5 },
-    { id: 8, name: "Tea leaves 250g", sku: "TEA-008", category: "Groceries", supplier: "Baraka Foods", buying: 85, selling: 110, quantity: 35, threshold: 15 },
-  ]);
+  const { products, categories: categoryList, suppliers, loading, error, reload } = useShop();
+  const [saving, setSaving] = useState(false);
+  const toast = useToast();
 
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
 
-  const categories = ["Groceries", "Household", "Dairy", "Bakery"];
+  const categories = categoryList.map((c) => c.name);
 
   const emptyForm = {
     name: "",
     sku: "",
-    category: "Groceries",
+    category: "",
     supplier: "",
     buying: "",
     selling: "",
@@ -58,7 +57,7 @@ function Inventory() {
     setForm({ ...form, [e.target.name]: e.target.value });
   }
 
-  function handleSave(e) {
+  async function handleSave(e) {
     e.preventDefault();
 
     if (!form.name || !form.sku || !form.supplier) {
@@ -74,24 +73,47 @@ function Inventory() {
       return;
     }
 
-    const product = {
-      ...form,
-      buying: Number(form.buying),
-      selling: Number(form.selling),
-      quantity: Number(form.quantity),
-      threshold: Number(form.threshold),
-    };
-
-    if (editingId) {
-      setProducts(products.map((p) => (p.id === editingId ? { ...product, id: editingId } : p)));
-    } else {
-      setProducts([...products, { ...product, id: Date.now() }]);
+    if (!form.category) {
+      setFormError("Please choose or type a category");
+      return;
     }
-    setShowForm(false);
+
+    setSaving(true);
+    try {
+      const body = {
+        name: form.name,
+        sku: form.sku,
+        description: form.description || "",
+        buying: Number(form.buying),
+        selling: Number(form.selling),
+        quantity: Number(form.quantity),
+        threshold: Number(form.threshold),
+        category: await ensureCategory(form.category, categoryList),
+        supplier: await ensureSupplier(form.supplier, suppliers),
+      };
+      if (editingId) {
+        await put("/api/products/" + editingId, body);
+      } else {
+        await post("/api/products", body);
+      }
+      await reload();
+      setShowForm(false);
+      toast(editingId ? "Product updated" : "Product added");
+    } catch (err) {
+      setFormError(err.message);
+    } finally {
+      setSaving(false);
+    }
   }
 
-  function handleDelete() {
-    setProducts(products.filter((p) => p.id !== deleteId));
+  async function handleDelete() {
+    try {
+      await del("/api/products/" + deleteId);
+      await reload();
+      toast("Product deleted");
+    } catch (err) {
+      toast(err.message, "error");
+    }
     setDeleteId(null);
   }
 
@@ -114,9 +136,11 @@ function Inventory() {
   const lowStock = products.filter((p) => getStatus(p) === "low").length;
   const outOfStock = products.filter((p) => getStatus(p) === "out").length;
 
+  if (loading) return <PageSkeleton active="Inventory" kind="list" />;
+
   return (
     <div className="dash">
-      <Sidebar active="Inventory" />
+      <TopNav active="Inventory" />
 
       <main className="dash-main">
         <div className="dash-top">
@@ -126,6 +150,8 @@ function Inventory() {
           </div>
           <button className="add-btn" onClick={openAdd}>+ Add product</button>
         </div>
+
+        <Status loading={loading} error={error} />
 
         <div className="stat-grid">
           <div className="stat-card">
@@ -153,28 +179,12 @@ function Inventory() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
-          <select
-            value={categoryFilter}
-            onChange={(e) => setCategoryFilter(e.target.value)}
-          >
-            <option value="all">All categories</option>
-            {categories.map((c) => (
-              <option key={c} value={c}>{c}</option>
-            ))}
-          </select>
-          <select
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-          >
-            <option value="all">All stock levels</option>
-            <option value="in">In stock</option>
-            <option value="low">Low stock</option>
-            <option value="out">Out of stock</option>
-          </select>
+          <Select value={categoryFilter} onChange={setCategoryFilter} options={[{ value: "all", label: "All categories" }, ...categories]} />
+          <Select value={statusFilter} onChange={setStatusFilter} options={[{ value: "all", label: "All stock levels" }, { value: "in", label: "In stock" }, { value: "low", label: "Low stock" }, { value: "out", label: "Out of stock" }]} />
         </div>
 
         <div className="panel table-panel">
-          <table>
+          <table className="stack">
             <thead>
               <tr>
                 <th>Product</th>
@@ -190,23 +200,23 @@ function Inventory() {
             <tbody>
               {shown.map((p) => (
                 <tr key={p.id}>
-                  <td>
+                  <td data-label="Product">
                     <strong>{p.name}</strong>
                     <span className="sku">{p.sku}</span>
                   </td>
-                  <td>{p.category}</td>
-                  <td>{p.supplier}</td>
-                  <td>{formatKES(p.buying)}</td>
-                  <td>{formatKES(p.selling)}</td>
-                  <td>{p.quantity}</td>
-                  <td>
+                  <td data-label="Category">{p.category}</td>
+                  <td data-label="Supplier">{p.supplier}</td>
+                  <td data-label="Buying price">{formatKES(p.buying)}</td>
+                  <td data-label="Selling price">{formatKES(p.selling)}</td>
+                  <td data-label="Quantity">{p.quantity}</td>
+                  <td data-label="Status">
                     <span className={"tag tag-" + getStatus(p)}>
                       {getStatus(p) === "in" && "In stock"}
                       {getStatus(p) === "low" && "Low stock"}
                       {getStatus(p) === "out" && "Out of stock"}
                     </span>
                   </td>
-                  <td className="row-actions">
+                  <td data-label="" className="row-actions">
                     <button onClick={() => openEdit(p)}>Edit</button>
                     <button className="danger" onClick={() => setDeleteId(p.id)}>
                       Delete
@@ -221,6 +231,8 @@ function Inventory() {
           )}
         </div>
       </main>
+
+      <Footer />
 
       {showForm && (
         <div className="overlay" onClick={() => setShowForm(false)}>
@@ -242,15 +254,11 @@ function Inventory() {
               </div>
               <div>
                 <label>Category</label>
-                <select name="category" value={form.category} onChange={handleChange}>
-                  {categories.map((c) => (
-                    <option key={c} value={c}>{c}</option>
-                  ))}
-                </select>
+                <ComboInput name="category" placeholder="Pick or type a new one" value={form.category} onChange={(v) => setForm({ ...form, category: v })} options={categories} />
               </div>
               <div className="full">
                 <label>Supplier</label>
-                <input name="supplier" value={form.supplier} onChange={handleChange} />
+                <ComboInput name="supplier" placeholder="Pick or type a new one" value={form.supplier} onChange={(v) => setForm({ ...form, supplier: v })} options={suppliers.map((x) => x.name)} />
               </div>
               <div>
                 <label>Buying price (KES)</label>
@@ -276,7 +284,7 @@ function Inventory() {
               <button type="button" className="cancel-btn" onClick={() => setShowForm(false)}>
                 Cancel
               </button>
-              <button type="submit" className="add-btn">Save product</button>
+              <button type="submit" className="add-btn" disabled={saving}>{saving ? "Saving..." : "Save product"}</button>
             </div>
           </form>
         </div>

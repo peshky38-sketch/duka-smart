@@ -1,19 +1,23 @@
 import { useState } from "react";
-import Sidebar from "../components/Sidebar";
+import TopNav from "../components/TopNav";
+import Footer from "../components/Footer";
+import PageSkeleton from "../components/PageSkeleton";
+import { Select, ComboInput } from "../components/Select";
+import Status from "../components/Status";
+import PayIcon from "../components/PayIcon";
+import { useShop } from "../useShop";
+import { useToast } from "../components/Toast";
+import { del, post } from "../api";
 import { formatKES } from "../utils/formatMoney";
 import "./Dashboard.css";
 import "./Expenses.css";
 
 function Expenses() {
-  // sample expenses for now, will come from the api later
-  const [expenses, setExpenses] = useState([
-    { id: 1, name: "Shop rent", amount: 15000, category: "Rent", payment: "M-Pesa", date: "2026-11-05", note: "November rent" },
-    { id: 2, name: "KPLC tokens", amount: 1500, category: "Utilities", payment: "M-Pesa", date: "2026-11-08", note: "" },
-    { id: 3, name: "Stock from Baraka Foods", amount: 8200, category: "Stock", payment: "Cash", date: "2026-11-10", note: "Sugar and unga" },
-    { id: 4, name: "Transport to market", amount: 600, category: "Transport", payment: "Cash", date: "2026-11-12", note: "" },
-    { id: 5, name: "Shop assistant wages", amount: 4000, category: "Wages", payment: "M-Pesa", date: "2026-11-13", note: "Weekly pay" },
-    { id: 6, name: "Carrier bags", amount: 350, category: "Other", payment: "Cash", date: "2026-11-14", note: "" },
-  ]);
+  const { expenses: raw, loading, error, reload } = useShop();
+  // the pages show a plain date, the backend sends a timestamp in UTC
+  const expenses = raw.map((x) => ({ ...x, date: new Date(x.createdAt + "Z").toLocaleDateString("en-CA") }));
+  const [saving, setSaving] = useState(false);
+  const toast = useToast();
 
   const categories = ["Rent", "Utilities", "Stock", "Transport", "Wages", "Other"];
 
@@ -23,10 +27,10 @@ function Expenses() {
   const [category, setCategory] = useState("Stock");
   const [payment, setPayment] = useState("Cash");
   const [note, setNote] = useState("");
-  const [error, setError] = useState("");
+  const [formError, setError] = useState("");
   const [filter, setFilter] = useState("all");
 
-  function handleAdd(e) {
+  async function handleAdd(e) {
     e.preventDefault();
 
     if (!name || !amount) {
@@ -38,27 +42,37 @@ function Expenses() {
       return;
     }
 
-    const newExpense = {
-      id: Date.now(),
-      name: name,
-      amount: Number(amount),
-      category: category,
-      payment: payment,
-      date: new Date().toISOString().slice(0, 10),
-      note: note,
-    };
-
-    setExpenses([newExpense, ...expenses]);
-    setName("");
-    setAmount("");
-    setNote("");
-    setError("");
-    setShowForm(false);
+    setSaving(true);
+    try {
+      await post("/api/expenses", {
+        expense_name: name,
+        amount: Number(amount),
+        category: category,
+        payment_method: payment,
+        note: note,
+      });
+      await reload();
+      toast("Expense added");
+      setName("");
+      setAmount("");
+      setNote("");
+      setError("");
+      setShowForm(false);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setSaving(false);
+    }
   }
 
-  function handleDelete(id) {
-    if (window.confirm("Delete this expense?")) {
-      setExpenses(expenses.filter((e) => e.id !== id));
+  async function handleDelete(id) {
+    if (!window.confirm("Delete this expense?")) return;
+    try {
+      await del("/api/expenses/" + id);
+      await reload();
+      toast("Expense deleted");
+    } catch (err) {
+      toast(err.message, "error");
     }
   }
 
@@ -80,11 +94,15 @@ function Expenses() {
     }
   }
 
+  if (loading) return <PageSkeleton active="Expenses" kind="list" />;
+
   return (
     <div className="dash">
-      <Sidebar active="Expenses" />
+      <TopNav active="Expenses" />
 
       <main className="dash-main">
+        <Status loading={loading} error={error} />
+
         <div className="dash-top">
           <div>
             <h1>Expenses</h1>
@@ -134,19 +152,11 @@ function Expenses() {
               </div>
               <div>
                 <label>Category</label>
-                <select value={category} onChange={(e) => setCategory(e.target.value)}>
-                  {categories.map((c) => (
-                    <option key={c} value={c}>{c}</option>
-                  ))}
-                </select>
+                <Select value={category} onChange={setCategory} options={categories} />
               </div>
               <div>
                 <label>Paid with</label>
-                <select value={payment} onChange={(e) => setPayment(e.target.value)}>
-                  <option>Cash</option>
-                  <option>M-Pesa</option>
-                  <option>Card</option>
-                </select>
+                <Select value={payment} onChange={setPayment} options={[{ value: "Cash", label: "Cash", icon: <PayIcon method="Cash" /> }, { value: "M-Pesa", label: "M-Pesa", icon: <PayIcon method="M-Pesa" /> }, { value: "Card", label: "Card", icon: <PayIcon method="Card" /> }]} />
               </div>
               <div className="wide">
                 <label>Note (optional)</label>
@@ -158,24 +168,19 @@ function Expenses() {
               </div>
             </div>
 
-            {error && <p className="form-error">{error}</p>}
+            {formError && <p className="form-error">{formError}</p>}
 
-            <button type="submit" className="add-btn">Save expense</button>
+            <button type="submit" className="add-btn" disabled={saving}>{saving ? "Saving..." : "Save expense"}</button>
           </form>
         )}
 
         <div className="filter-row">
           <label>Show:</label>
-          <select value={filter} onChange={(e) => setFilter(e.target.value)}>
-            <option value="all">All categories</option>
-            {categories.map((c) => (
-              <option key={c} value={c}>{c}</option>
-            ))}
-          </select>
+          <Select value={filter} onChange={setFilter} options={[{ value: "all", label: "All categories" }, ...categories]} />
         </div>
 
         <div className="panel table-panel">
-          <table>
+          <table className="stack">
             <thead>
               <tr>
                 <th>Expense</th>
@@ -189,15 +194,15 @@ function Expenses() {
             <tbody>
               {shown.map((e) => (
                 <tr key={e.id}>
-                  <td>
+                  <td data-label="Expense">
                     <strong>{e.name}</strong>
                     {e.note && <span className="note">{e.note}</span>}
                   </td>
-                  <td>{e.category}</td>
-                  <td>{e.payment}</td>
-                  <td>{e.date}</td>
-                  <td>{formatKES(e.amount)}</td>
-                  <td className="row-actions">
+                  <td data-label="Category">{e.category}</td>
+                  <td data-label="Payment">{e.payment}</td>
+                  <td data-label="Date">{e.date}</td>
+                  <td data-label="Amount">{formatKES(e.amount)}</td>
+                  <td data-label="" className="row-actions">
                     <button onClick={() => handleDelete(e.id)}>Delete</button>
                   </td>
                 </tr>
@@ -209,6 +214,8 @@ function Expenses() {
           )}
         </div>
       </main>
+
+      <Footer />
     </div>
   );
 }
