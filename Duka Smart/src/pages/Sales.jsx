@@ -1,159 +1,298 @@
 import { useState } from "react";
-import { useApp, isOut } from "../context/AppContext.jsx";
-import MpesaModal from "../components/MpesaModal.jsx";
-import BarcodeScanner from "../components/BarcodeScanner.jsx";
+import { Link } from "react-router-dom";
+import TopNav from "../components/TopNav";
+import Footer from "../components/Footer";
+import PageSkeleton from "../components/PageSkeleton";
+import Status from "../components/Status";
+import { useToast } from "../components/Toast";
+import PayIcon from "../components/PayIcon";
+import { useShop } from "../useShop";
+import { post } from "../api";
+import { formatKES } from "../utils/formatMoney";
+import "./Dashboard.css";
+import "./Sales.css";
 
-const TABS = ["All", "Grocery", "Drinks", "Bakery", "Household"];
+const PAYMENTS = ["Cash", "M-Pesa", "Card"];
 
-export default function Sales() {
-  const { products, sales, completeSale, loading } = useApp();
-  const [tab, setTab] = useState("All");
+function Sales() {
+  const shop = useShop();
+  const toast = useToast();
+
   const [search, setSearch] = useState("");
-  const [cart, setCart] = useState({}); // { productId: qty }
-  const [method, setMethod] = useState("M-Pesa");
-  const [msg, setMsg] = useState(null);
-  const [mpesaOpen, setMpesaOpen] = useState(false);
-  const [scanning, setScanning] = useState(false);
-  const [paid, setPaid] = useState(null); // an M-Pesa payment that was received but not saved yet
+  const [category, setCategory] = useState("All");
+  const [cart, setCart] = useState([]);
+  const [payment, setPayment] = useState("Cash");
+  const [received, setReceived] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [receipt, setReceipt] = useState(null);
+  const [sheet, setSheet] = useState(false);
 
-  const shown = products.filter(
-    (p) =>
-      (tab === "All" || p.category === tab) &&
-      p.name.toLowerCase().includes(search.toLowerCase())
-  );
-  // `qty` on a line is how many are in the sale; `stock` is how many are on the shelf
-  const lines = Object.keys(cart).map((id) => {
-    const p = products.find((x) => x.id === Number(id));
-    return { ...p, qty: cart[id], stock: p.qty };
+  const products = shop.products;
+  const categories = ["All", ...shop.categories.map((c) => c.name)];
+  const tone = (p) => 1 + (shop.categories.findIndex((c) => c.id === p.categoryId) % 6);
+
+  const shown = products.filter((p) => {
+    if (category !== "All" && p.category !== category) return false;
+    return p.name.toLowerCase().includes(search.toLowerCase());
   });
-  const total = lines.reduce((s, l) => s + l.price * l.qty, 0);
-  const nextId = Math.max(0, ...sales.map((s) => s.id)) + 1;
 
-  // A sale cannot exceed available stock
-  const add = (p) => {
-    const have = cart[p.id] || 0;
-    if (have < p.qty) setCart({ ...cart, [p.id]: have + 1 });
-  };
-  const change = (p, d) => {
-    const n = (cart[p.id] || 0) + d;
-    const next = { ...cart };
-    if (n <= 0) delete next[p.id];
-    else if (n <= p.stock) next[p.id] = n; // never above the stock on the shelf
-    setCart(next);
-  };
+  const qtyInCart = (id) => (cart.find((i) => i.id === id) || { qty: 0 }).qty;
 
-  // Barcode scanners type the code and press Enter: add the matching product straight to the sale
-  const onSearchKey = (e) => {
-    if (e.key !== "Enter" || !search.trim()) return;
-    const q = search.trim().toLowerCase();
-    const hit =
-      products.find((p) => p.barcode === search.trim() || p.sku.toLowerCase() === q || p.name.toLowerCase() === q) ||
-      (shown.length === 1 ? shown[0] : null);
-    if (hit && !isOut(hit)) {
-      add(hit);
-      setSearch("");
+  function addToCart(p) {
+    if (p.quantity === 0) return;
+    if (qtyInCart(p.id) >= p.quantity) {
+      toast("Only " + p.quantity + " of " + p.name + " in stock", "error");
+      return;
     }
-  };
+    setCart((c) =>
+      c.find((i) => i.id === p.id)
+        ? c.map((i) => (i.id === p.id ? { ...i, qty: i.qty + 1 } : i))
+        : [...c, { id: p.id, name: p.name, price: p.selling, qty: 1, stock: p.quantity }]
+    );
+  }
 
-  // Records the sale (and reduces stock). For M-Pesa this runs only after the payment succeeded.
-  const finishSale = async (receipt) => {
+  function changeQty(id, by) {
+    setCart((c) =>
+      c
+        .map((i) => (i.id === id ? { ...i, qty: Math.min(i.stock, i.qty + by) } : i))
+        .filter((i) => i.qty > 0)
+    );
+  }
+
+  const total = cart.reduce((s, i) => s + i.price * i.qty, 0);
+  const itemCount = cart.reduce((s, i) => s + i.qty, 0);
+
+  const cash = Number(received) || 0;
+  const change = cash - total;
+  const quick = [...new Set([total, Math.ceil(total / 100) * 100, Math.ceil(total / 500) * 500, Math.ceil(total / 1000) * 1000])].filter((n) => n > 0);
+
+  async function charge() {
+    if (cart.length === 0) return;
+    if (payment === "Cash" && received !== "" && cash < total) {
+      toast("Cash received is less than the total", "error");
+      return;
+    }
+    setSaving(true);
     try {
-      await completeSale(lines.map((l) => ({ id: l.id, qty: l.qty })), method);
-      setCart({});
-      setPaid(null);
-      setMsg({ ok: true, text: `Sale #${nextId} completed. Stock updated.${receipt ? ` M-Pesa receipt: ${receipt}.` : ""}` });
+      const sale = await post("/api/sales", {
+        payment_method: payment,
+        items: cart.map((i) => ({ product_id: i.id, quantity: i.qty })),
+      });
+      setReceipt({
+        number: sale.sale_number,
+        total,
+        payment,
+        items: cart,
+        change: payment === "Cash" && received !== "" ? change : null,
+        time: new Date(),
+      });
+      setCart([]);
+      setReceived("");
+      setSheet(false);
+      toast("Sale recorded · " + formatKES(total));
+      await shop.reload();
     } catch (err) {
-      if (receipt) setPaid({ receipt }); // the customer already paid, so never ask them to pay twice
-      setMsg({ ok: false, text: receipt ? `Payment received (${receipt}) but the sale was not saved: ${err.message}. Press Save sale to try again.` : err.message });
+      toast(err.message, "error");
+    } finally {
+      setSaving(false);
     }
-  };
+  }
 
-  // Camera scan: add the product with that barcode to the sale
-  const onScan = (code) => {
-    setScanning(false);
-    const hit = products.find((p) => p.barcode === code || p.sku === code);
-    if (!hit) return setMsg({ ok: false, text: `No product with barcode ${code}.` });
-    if (isOut(hit)) return setMsg({ ok: false, text: `${hit.name} is out of stock.` });
-    add(hit);
-    setMsg({ ok: true, text: `Added ${hit.name}.` });
-  };
+  const todayKey = new Date().toDateString();
+  const todays = shop.sales.filter((x) => new Date(x.createdAt + "Z").toDateString() === todayKey);
+  const todaysTotal = todays.reduce((s, x) => s + x.total, 0);
+  const average = todays.length ? Math.round(todaysTotal / todays.length) : 0;
+  const byPay = {};
+  todays.forEach((x) => (byPay[x.payment] = (byPay[x.payment] || 0) + 1));
+  const payNote = Object.entries(byPay).map(([m, n]) => m + " " + n).join(" · ") || "No sales yet";
 
-  const complete = () => {
-    if (!lines.length) return;
-    if (method === "M-Pesa" && !paid) setMpesaOpen(true); // send the payment prompt first
-    else finishSale(paid?.receipt);
-  };
+  if (shop.loading) return <PageSkeleton active="Sales" kind="till" />;
 
   return (
-    <>
-      <div className="top">
-        <div>
-          <h1>New sale</h1>
-          <p className="muted">Tap products to add them, or scan a barcode. Pick how the customer pays.</p>
-        </div>
-      </div>
+    <div className="dash">
+      <TopNav active="Sales" />
 
-      {msg && <div className={"banner" + (msg.ok ? " ok" : "")}>{msg.text}</div>}
+      <main className="dash-main">
+        <Status loading={shop.loading} error={shop.error} />
 
-      <div className="pos">
-        <div>
-          <div className="inline">
-            <input className="search" placeholder="Search or scan a product" value={search} onChange={(e) => setSearch(e.target.value)} onKeyDown={onSearchKey} />
-            <button className="btn out" onClick={() => setScanning(true)} title="Scan with the camera">📷 Scan</button>
+        <div className="dash-top">
+          <div>
+            <h1>New sale</h1>
+            <p className="dash-sub">Tap a product to add it, then take the payment.</p>
           </div>
-          <div className="tabs">
-            {TABS.map((t) => (
-              <button key={t} className={t === tab ? "on" : ""} onClick={() => setTab(t)}>{t}</button>
-            ))}
-          </div>
-          <div className="prods">
-            {shown.map((p) => (
-              <button key={p.id} className={"prod" + (cart[p.id] ? " picked" : "")} disabled={isOut(p)} onClick={() => add(p)}>
-                <span>{p.emoji}</span>
-                <b>{p.name}</b>
-                <div className="row nb"><b className="green">KES {p.price}</b><small className="muted">{p.qty} in stock</small></div>
-              </button>
-            ))}
-          </div>
-          {shown.length === 0 && <p className="muted">{loading ? "Loading products..." : "No products found."}</p>}
         </div>
 
-        <div className="card">
-          <div className="row"><b>Current sale</b><span className="muted">#{nextId}</span></div>
-          {lines.length === 0 && <p className="muted" style={{ padding: "12px 0" }}>No items yet.</p>}
-          {lines.map((l) => (
-            <div className="row" key={l.id}>
-              <span>{l.emoji} <b>{l.name}</b><br /><small className="muted">KES {l.price} each</small></span>
-              <span className="qty">
-                <button onClick={() => change(l, -1)}>−</button>{l.qty}<button onClick={() => change(l, 1)}>+</button>
-              </span>
-              <b>{l.price * l.qty}</b>
+        <section className="kpis compact" aria-label="Today">
+          <div className="kpi primary">
+            <span className="k-label">Sales today</span>
+            <strong>{formatKES(todaysTotal)}</strong>
+            <span className="k-note">{todays.length} {todays.length === 1 ? "sale" : "sales"} so far</span>
+          </div>
+          <div className="kpi">
+            <span className="k-label">Average sale</span>
+            <strong>{formatKES(average)}</strong>
+            <span className="k-note">Per customer today</span>
+          </div>
+          <div className="kpi">
+            <span className="k-label">Paid by</span>
+            <strong className="k-small">{payNote}</strong>
+            <span className="k-note">Sales by payment method</span>
+          </div>
+          <div className="kpi">
+            <span className="k-label">In this sale</span>
+            <strong>{itemCount}</strong>
+            <span className="k-note">{itemCount === 0 ? "Nothing added yet" : formatKES(total) + " so far"}</span>
+          </div>
+        </section>
+
+        <div className="till">
+          <section className="panel picker">
+            <div className="picker-top">
+              <input className="t-search" placeholder="Search products" value={search} onChange={(e) => setSearch(e.target.value)} />
             </div>
-          ))}
-          <div className="row"><b>Total</b><span className="total">KES {total.toLocaleString()}</span></div>
-          <div className="pay">
-            {["Cash", "M-Pesa", "Card"].map((m) => (
-              <button key={m} className={m === method ? "on" : ""} onClick={() => setMethod(m)}>{m}</button>
-            ))}
-          </div>
-          <button className="btn full big" onClick={complete} disabled={!lines.length}>
-            {paid ? "Save sale" : method === "M-Pesa" ? "Request M-Pesa payment" : "Complete sale"}{total ? ` · KES ${total.toLocaleString()}` : ""}
-          </button>
-          <small className="muted">
-            {method === "M-Pesa" ? "A payment prompt is sent to the customer's phone. " : ""}Stock updates automatically when the sale is completed.
-          </small>
+            <div className="chips">
+              {categories.map((c) => (
+                <button key={c} className={c === category ? "chip on" : "chip"} onClick={() => setCategory(c)}>{c}</button>
+              ))}
+            </div>
+
+            <div className="tiles">
+              {shown.map((p) => {
+                const n = qtyInCart(p.id);
+                const out = p.quantity === 0;
+                return (
+                  <button
+                    key={p.id}
+                    className={"tile" + (out ? " out" : "") + (n ? " picked" : "")}
+                    onClick={() => addToCart(p)}
+                    disabled={out}
+                  >
+                    {n > 0 && <span className="q">{n}</span>}
+                    <i className={"dot tone" + tone(p)} />
+                    <strong>{p.name}</strong>
+                    <span className="p">{formatKES(p.selling)}</span>
+                    <small>{out ? "Out of stock" : p.quantity <= p.threshold ? p.quantity + " left" : p.quantity + " in stock"}</small>
+                  </button>
+                );
+              })}
+              {!shop.loading && shown.length === 0 && <p className="empty">No products match.</p>}
+            </div>
+          </section>
+
+          <aside className={"cart" + (sheet ? " open" : "")}>
+            <button className="sheet-close" onClick={() => setSheet(false)} aria-label="Close">Close</button>
+            <h2>Current sale {itemCount > 0 && <span className="count">{itemCount}</span>}</h2>
+
+            <div className="lines">
+              {cart.length === 0 && <p className="no-items">Nothing added yet.<br />Tap a product to start.</p>}
+              {cart.map((i) => (
+                <div className="cart-line" key={i.id}>
+                  <div>
+                    <strong>{i.name}</strong>
+                    <small>{formatKES(i.price)} each</small>
+                  </div>
+                  <div className="qty">
+                    <button onClick={() => changeQty(i.id, -1)}>−</button>
+                    <span>{i.qty}</span>
+                    <button onClick={() => changeQty(i.id, 1)}>+</button>
+                  </div>
+                  <b>{formatKES(i.price * i.qty)}</b>
+                </div>
+              ))}
+            </div>
+
+            <div className="total"><span>Total</span><strong>{formatKES(total)}</strong></div>
+
+            <div className="pay-grid" role="radiogroup" aria-label="Payment method">
+              {PAYMENTS.map((m) => (
+                <button key={m} role="radio" aria-checked={m === payment} className={m === payment ? "pay-opt on" : "pay-opt"} onClick={() => setPayment(m)}>
+                  <span className="pay-art"><PayIcon method={m} /></span>
+                  <span className="pay-name">{m}</span>
+                </button>
+              ))}
+            </div>
+
+            {payment === "Cash" && total > 0 && (
+              <div className="cash">
+                <div className="quick">
+                  {quick.map((q) => (
+                    <button key={q} onClick={() => setReceived(String(q))} className={cash === q ? "on" : ""}>{q === total ? "Exact" : q.toLocaleString()}</button>
+                  ))}
+                </div>
+                <input type="number" min="0" placeholder="Cash received" value={received} onChange={(e) => setReceived(e.target.value)} />
+                {received !== "" && (
+                  <div className={"change" + (change < 0 ? " short" : "")}>
+                    {change >= 0 ? "Change " : "Still owed "}<b>{formatKES(Math.abs(change))}</b>
+                  </div>
+                )}
+              </div>
+            )}
+
+            <button className="charge" onClick={charge} disabled={saving || cart.length === 0}>
+              {saving ? "Recording..." : cart.length === 0 ? "Add a product" : "Charge " + formatKES(total)}
+            </button>
+          </aside>
         </div>
-      </div>
 
-      {scanning && <BarcodeScanner onClose={() => setScanning(false)} onDetected={onScan} />}
+        {sheet && <div className="sheet-backdrop" onClick={() => setSheet(false)} />}
 
-      {mpesaOpen && (
-        <MpesaModal
-          amount={total}
-          onPaid={(receipt) => { setMpesaOpen(false); finishSale(receipt); }}
-          onClose={() => setMpesaOpen(false)}
-        />
+        {cart.length > 0 && !sheet && (
+          <button className="cartbar" onClick={() => setSheet(true)}>
+            <span>{itemCount} {itemCount === 1 ? "item" : "items"}</span>
+            <b>{formatKES(total)}</b>
+            <span className="go">Review</span>
+          </button>
+        )}
+
+        <div className="panel today-panel">
+          <div className="g-head"><h2>Today's sales</h2><Link to="/transactions" className="g-link">See all</Link></div>
+          {todays.length === 0 && <p className="empty">No sales yet today.</p>}
+          {todays.length > 0 && (
+            <table className="stack">
+              <thead>
+                <tr><th>Sale</th><th>Items</th><th>Payment</th><th>Total</th><th>Time</th></tr>
+              </thead>
+              <tbody>
+                {todays.map((s) => (
+                  <tr key={s.id}>
+                    <td data-label="Sale">#{s.number.replace("SALE-", "").slice(0, 5)}</td>
+                    <td data-label="Items">{s.items.reduce((n, i) => n + i.quantity, 0)}</td>
+                    <td data-label="Payment">{s.payment}</td>
+                    <td data-label="Total">{formatKES(s.total)}</td>
+                    <td data-label="Time">{new Date(s.createdAt + "Z").toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </div>
+      </main>
+
+      <Footer />
+
+      {receipt && (
+        <div className="overlay" onClick={() => setReceipt(null)}>
+          <div className="modal receipt" onClick={(e) => e.stopPropagation()}>
+            <svg className="tick" viewBox="0 0 72 72"><circle cx="36" cy="36" r="30" /><path d="M23 37l9 9 18-20" /></svg>
+            <h2>Sale complete</h2>
+            <p className="dash-sub">#{receipt.number.replace("SALE-", "").slice(0, 5)} · {receipt.time.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}</p>
+            <div className="r-pay"><PayIcon method={receipt.payment} /><span>Paid by {receipt.payment}</span></div>
+            <div className="r-lines">
+              {receipt.items.map((i) => (
+                <div key={i.id}><span>{i.name} × {i.qty}</span><b>{formatKES(i.price * i.qty)}</b></div>
+              ))}
+            </div>
+            <div className="r-total"><span>Total</span><strong>{formatKES(receipt.total)}</strong></div>
+            {receipt.change !== null && receipt.change >= 0 && <div className="change">Give back <b>{formatKES(receipt.change)}</b></div>}
+            <div className="modal-buttons">
+              <button className="cancel-btn" onClick={() => window.print()}>Print</button>
+              <button className="add-btn" onClick={() => setReceipt(null)}>New sale</button>
+            </div>
+          </div>
+        </div>
       )}
-    </>
+    </div>
   );
 }
+
+export default Sales;

@@ -1,41 +1,65 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import Logo from "../components/Logo.jsx";
-import { useApp } from "../context/AppContext.jsx";
+import { login } from "../api";
+import AuthShell, { PasswordField } from "../components/AuthShell";
 
-export default function Login() {
-  const { login } = useApp();
-  const nav = useNavigate();
+function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+  const navigate = useNavigate();
 
-  const submit = async (e) => {
+  async function handleSubmit(e) {
     e.preventDefault();
-    setBusy(true);
+
+    if (!email || !password) {
+      setError("Please enter your email and password");
+      return;
+    }
+
     setError("");
+    setBusy(true);
     try {
       await login(email, password);
-      nav("/");
+      navigate("/dashboard");
     } catch (err) {
       setError(err.message);
+    } finally {
+      setBusy(false);
     }
-    setBusy(false);
-  };
+  }
 
   return (
-    <div className="auth">
-      <form className="card" onSubmit={submit}>
-        <Logo />
-        <h1>Welcome back</h1>
-        <p className="muted">Log in to manage your shop.</p>
-        {error && <div className="banner">{error}</div>}
-        <label>Email<input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} /></label>
-        <label>Password<input type="password" required value={password} onChange={(e) => setPassword(e.target.value)} /></label>
-        <button className="btn full" disabled={busy}>{busy ? "Logging in..." : "Log in"}</button>
-        <p className="muted">New here? <Link to="/register">Create an account</Link></p>
+    <AuthShell>
+      <div className="au-head">
+        <h2>Welcome back</h2>
+        <p>Log in to manage your shop.</p>
+      </div>
+
+      <form className="au-form" onSubmit={handleSubmit} noValidate>
+        <div className="au-field">
+          <label htmlFor="email">Email</label>
+          <input id="email" type="email" placeholder="you@example.com" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} />
+        </div>
+
+        <div className="au-field">
+          <label htmlFor="password">Password</label>
+          <PasswordField id="password" placeholder="Enter your password" autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} />
+        </div>
+
+        {error && <p className="au-error" role="alert">{error}</p>}
+
+        <button type="submit" className="au-submit" disabled={busy}>
+          {busy && <span className="au-spin" />}
+          {busy ? "Logging in..." : "Log in"}
+        </button>
       </form>
-    </div>
+
+      <div className="au-or">New to DukaSmart?</div>
+      <Link to="/register" className="au-alt">Create an account</Link>
+    </AuthShell>
   );
 }
+
+export default Login;

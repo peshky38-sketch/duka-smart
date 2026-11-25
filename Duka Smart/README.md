@@ -1,16 +1,38 @@
-# React + Vite
+# DukaSmart frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Pages and components for the DukaSmart web app (React). The React setup itself (package.json, router) is still to come, so for now this folder only has `src/`.
 
-Currently, two official plugins are available:
+## What is in src
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+| Folder | Files |
+|---|---|
+| `pages/` | Login, Register, Dashboard, Inventory, Sales, Expenses, Transactions, Reports (each with its own .css) |
+| `components/` | Sidebar (shared by all the pages after login) |
+| `assets/` | logo.svg |
 
-## React Compiler
+All numbers on the pages are sample data for now. They will be replaced with data from the Flask api.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Routes the pages expect
 
-## Expanding the ESLint configuration
+`/login`, `/register`, `/dashboard`, `/inventory`, `/sales`, `/expenses`, `/transactions`, `/reports`
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+The links use plain `<a href>` for now. When react-router is added they can be changed to `<Link>`.
+
+## Responsive layout
+
+Every page was checked at 320px, 375px and 768px wide, and the inventory, sales and transactions pages at 1024px.
+
+- Under 900px (800px for login and register) the sidebar becomes a top bar and everything stacks into one column.
+- Under 480px the cards and headings get a bit smaller.
+- Tables and the yearly chart scroll sideways inside their card instead of stretching the whole page.
+- Inputs are 16px on phones so iPhones do not zoom in when you tap them.
+- Buttons and links are at least about 38px tall on phones so they are easy to tap.
+
+Things to remember:
+
+1. `index.html` must have this tag or none of the phone layouts will work:
+   ```html
+   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+   ```
+2. All the css files are global (no css modules yet), so give new class names a page-specific name. Charts on the Reports page use `report-chart` for this reason.
+3. Money amounts use the small `formatKES` helper in `src/utils/formatMoney.js` (KES 1,844,400). Use it for every new amount so the format stays the same.

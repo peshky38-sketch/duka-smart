@@ -1,5 +1,6 @@
 import { NavLink, Outlet, Link } from "react-router-dom";
 import Logo from "./Logo.jsx";
+import SearchBar from "./SearchBar.jsx";
 import { useApp, isLow, isOut } from "../context/AppContext.jsx";
 
 const LINKS = [
@@ -32,7 +33,7 @@ export default function Layout() {
       </aside>
       <div>
         <header className="topbar">
-          <input placeholder="Search products, sales, suppliers" />
+          <SearchBar />
           <div className="user">
             <Link to="/notifications" className="bell" title="Notifications">
               🔔{unread > 0 && <i>{unread}</i>}

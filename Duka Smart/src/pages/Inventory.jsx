@@ -27,7 +27,6 @@ function Inventory() {
     sku: "",
     category: "",
     supplier: "",
-    supplierPhone: "",
     buying: "",
     selling: "",
     quantity: "",
@@ -90,7 +89,7 @@ function Inventory() {
         quantity: Number(form.quantity),
         threshold: Number(form.threshold),
         category: await ensureCategory(form.category, categoryList),
-        supplier: await ensureSupplier(form.supplier, suppliers, form.supplierPhone),
+        supplier: await ensureSupplier(form.supplier, suppliers),
       };
       if (editingId) {
         await put("/api/products/" + editingId, body);
@@ -117,11 +116,6 @@ function Inventory() {
     }
     setDeleteId(null);
   }
-
-  // a supplier name that is not in the list is a new supplier, so ask for its phone number
-  const supplierIsNew =
-    form.supplier.trim() !== "" &&
-    !suppliers.some((s) => s.name.toLowerCase() === form.supplier.trim().toLowerCase());
 
   function getStatus(p) {
     if (p.quantity === 0) return "out";
@@ -266,12 +260,6 @@ function Inventory() {
                 <label>Supplier</label>
                 <ComboInput name="supplier" placeholder="Pick or type a new one" value={form.supplier} onChange={(v) => setForm({ ...form, supplier: v })} options={suppliers.map((x) => x.name)} />
               </div>
-              {supplierIsNew && (
-                <div className="full">
-                  <label>Supplier phone (optional)</label>
-                  <input name="supplierPhone" type="tel" placeholder="e.g. 0712 345 678" value={form.supplierPhone || ""} onChange={handleChange} />
-                </div>
-              )}
               <div>
                 <label>Buying price (KES)</label>
                 <input name="buying" type="number" min="0" value={form.buying} onChange={handleChange} />

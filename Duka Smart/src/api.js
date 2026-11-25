@@ -78,8 +78,9 @@ export async function checkSession() {
     await get("/api/profile");
     return true;
   } catch (err) {
-    // a bad token already logs out inside request(); an unreachable server keeps the session
-    return isLoggedIn();
+    // bad token or unreachable server: do not trust the stored token
+    logout();
+    return false;
   }
 }
 

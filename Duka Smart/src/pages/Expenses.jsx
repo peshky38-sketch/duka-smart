@@ -1,160 +1,223 @@
 import { useState } from "react";
-import { useApp } from "../context/AppContext.jsx";
-import { EXPENSE_CATEGORIES } from "../data/mock";
-import { kes, sum, sameDay, fmtDate, downloadCsv, isoDay } from "../utils";
+import TopNav from "../components/TopNav";
+import Footer from "../components/Footer";
+import PageSkeleton from "../components/PageSkeleton";
+import { Select, ComboInput } from "../components/Select";
+import Status from "../components/Status";
+import PayIcon from "../components/PayIcon";
+import { useShop } from "../useShop";
+import { useToast } from "../components/Toast";
+import { del, post } from "../api";
+import { formatKES } from "../utils/formatMoney";
+import "./Dashboard.css";
+import "./Expenses.css";
 
-// Used for both Add and Edit. Pass `expense` to edit.
-function ExpenseForm({ expense, onSave, onClose }) {
-  const [f, setF] = useState(
-    expense
-      ? { description: expense.description, category: expense.category, amount: expense.amount, date: new Date(expense.date).toLocaleDateString("en-CA") }
-      : { description: "", category: "Transport", amount: "", date: new Date().toLocaleDateString("en-CA") } // YYYY-MM-DD in local time
-  );
-  const [error, setError] = useState("");
-  const set = (k) => (e) => setF({ ...f, [k]: e.target.value });
+function Expenses() {
+  const { expenses: raw, loading, error, reload } = useShop();
+  // the pages show a plain date, the backend sends a timestamp in UTC
+  const expenses = raw.map((x) => ({ ...x, date: new Date(x.createdAt + "Z").toLocaleDateString("en-CA") }));
+  const [saving, setSaving] = useState(false);
+  const toast = useToast();
 
-  const submit = async (e) => {
+  const categories = ["Rent", "Utilities", "Stock", "Transport", "Wages", "Other"];
+
+  const [showForm, setShowForm] = useState(false);
+  const [name, setName] = useState("");
+  const [amount, setAmount] = useState("");
+  const [category, setCategory] = useState("Stock");
+  const [payment, setPayment] = useState("Cash");
+  const [note, setNote] = useState("");
+  const [formError, setError] = useState("");
+  const [filter, setFilter] = useState("all");
+
+  async function handleAdd(e) {
     e.preventDefault();
+
+    if (!name || !amount) {
+      setError("Please enter the expense name and amount");
+      return;
+    }
+    if (Number(amount) <= 0) {
+      setError("Amount must be more than 0");
+      return;
+    }
+
+    setSaving(true);
     try {
-      await onSave({
-        ...(expense ? { id: expense.id } : {}),
-        description: f.description,
-        category: f.category,
-        amount: Number(f.amount),
-        date: new Date(f.date + "T12:00:00").toISOString(),
+      await post("/api/expenses", {
+        expense_name: name,
+        amount: Number(amount),
+        category: category,
+        payment_method: payment,
+        note: note,
       });
-      onClose();
+      await reload();
+      toast("Expense added");
+      setName("");
+      setAmount("");
+      setNote("");
+      setError("");
+      setShowForm(false);
     } catch (err) {
       setError(err.message);
+    } finally {
+      setSaving(false);
     }
-  };
+  }
+
+  async function handleDelete(id) {
+    if (!window.confirm("Delete this expense?")) return;
+    try {
+      await del("/api/expenses/" + id);
+      await reload();
+      toast("Expense deleted");
+    } catch (err) {
+      toast(err.message, "error");
+    }
+  }
+
+  const shown = expenses.filter((e) => filter === "all" || e.category === filter);
+
+  const total = expenses.reduce((sum, e) => sum + e.amount, 0);
+
+  // work out which category we spend the most on
+  const totals = {};
+  expenses.forEach((e) => {
+    totals[e.category] = (totals[e.category] || 0) + e.amount;
+  });
+  let biggest = "-";
+  let biggestAmount = 0;
+  for (const c in totals) {
+    if (totals[c] > biggestAmount) {
+      biggest = c;
+      biggestAmount = totals[c];
+    }
+  }
+
+  if (loading) return <PageSkeleton active="Expenses" kind="list" />;
 
   return (
-    <div className="overlay" onClick={onClose}>
-      <form className="card modal" onClick={(e) => e.stopPropagation()} onSubmit={submit}>
-        <h2>{expense ? "Edit expense" : "Add expense"}</h2>
-        {error && <div className="banner">{error}</div>}
-        <label>What was it for?<input required value={f.description} onChange={set("description")} placeholder="e.g. Transport to wholesaler" /></label>
-        <label>Category
-          <select value={f.category} onChange={set("category")}>
-            {EXPENSE_CATEGORIES.map((c) => <option key={c}>{c}</option>)}
-          </select>
-        </label>
-        <div className="two-col">
-          <label>Amount (KES)<input type="number" min="1" required value={f.amount} onChange={set("amount")} /></label>
-          <label>Date<input type="date" required value={f.date} onChange={set("date")} /></label>
+    <div className="dash">
+      <TopNav active="Expenses" />
+
+      <main className="dash-main">
+        <Status loading={loading} error={error} />
+
+        <div className="dash-top">
+          <div>
+            <h1>Expenses</h1>
+            <p className="dash-sub">Keep track of what your shop spends</p>
+          </div>
+          <button className="add-btn" onClick={() => setShowForm(!showForm)}>
+            {showForm ? "Close" : "+ Add expense"}
+          </button>
         </div>
-        <div className="actions">
-          <button type="button" className="btn out" onClick={onClose}>Cancel</button>
-          <button className="btn">Save expense</button>
+
+        <div className="stat-grid expense-stats">
+          <div className="stat-card">
+            <span className="stat-label">Total this month</span>
+            <span className="stat-value">{formatKES(total)}</span>
+          </div>
+          <div className="stat-card">
+            <span className="stat-label">Number of expenses</span>
+            <span className="stat-value">{expenses.length}</span>
+          </div>
+          <div className="stat-card">
+            <span className="stat-label">Biggest spending</span>
+            <span className="stat-value">{biggest}</span>
+          </div>
         </div>
-      </form>
+
+        {showForm && (
+          <form className="panel expense-form" onSubmit={handleAdd}>
+            <h2>New expense</h2>
+            <div className="expense-fields">
+              <div>
+                <label>What was it for?</label>
+                <input
+                  type="text"
+                  placeholder="e.g. Electricity tokens"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                />
+              </div>
+              <div>
+                <label>Amount (KES)</label>
+                <input
+                  type="number"
+                  min="0"
+                  value={amount}
+                  onChange={(e) => setAmount(e.target.value)}
+                />
+              </div>
+              <div>
+                <label>Category</label>
+                <Select value={category} onChange={setCategory} options={categories} />
+              </div>
+              <div>
+                <label>Paid with</label>
+                <Select value={payment} onChange={setPayment} options={[{ value: "Cash", label: "Cash", icon: <PayIcon method="Cash" /> }, { value: "M-Pesa", label: "M-Pesa", icon: <PayIcon method="M-Pesa" /> }, { value: "Card", label: "Card", icon: <PayIcon method="Card" /> }]} />
+              </div>
+              <div className="wide">
+                <label>Note (optional)</label>
+                <input
+                  type="text"
+                  value={note}
+                  onChange={(e) => setNote(e.target.value)}
+                />
+              </div>
+            </div>
+
+            {formError && <p className="form-error">{formError}</p>}
+
+            <button type="submit" className="add-btn" disabled={saving}>{saving ? "Saving..." : "Save expense"}</button>
+          </form>
+        )}
+
+        <div className="filter-row">
+          <label>Show:</label>
+          <Select value={filter} onChange={setFilter} options={[{ value: "all", label: "All categories" }, ...categories]} />
+        </div>
+
+        <div className="panel table-panel">
+          <table className="stack">
+            <thead>
+              <tr>
+                <th>Expense</th>
+                <th>Category</th>
+                <th>Payment</th>
+                <th>Date</th>
+                <th>Amount</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              {shown.map((e) => (
+                <tr key={e.id}>
+                  <td data-label="Expense">
+                    <strong>{e.name}</strong>
+                    {e.note && <span className="note">{e.note}</span>}
+                  </td>
+                  <td data-label="Category">{e.category}</td>
+                  <td data-label="Payment">{e.payment}</td>
+                  <td data-label="Date">{e.date}</td>
+                  <td data-label="Amount">{formatKES(e.amount)}</td>
+                  <td data-label="" className="row-actions">
+                    <button onClick={() => handleDelete(e.id)}>Delete</button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          {shown.length === 0 && (
+            <p className="empty">No expenses in this category.</p>
+          )}
+        </div>
+      </main>
+
+      <Footer />
     </div>
   );
 }
 
-export default function Expenses() {
-  const { expenses, addExpense, updateExpense, deleteExpense } = useApp();
-  const [form, setForm] = useState(null); // null = closed, {} = add, expense = edit
-  const [cat, setCat] = useState("All");
-
-  const now = new Date();
-  const thisMonth = expenses.filter((e) => {
-    const d = new Date(e.date);
-    return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
-  });
-  const todayTotal = sum(expenses.filter((e) => sameDay(e.date, now)), (e) => e.amount);
-  const monthTotal = sum(thisMonth, (e) => e.amount);
-  const byCat = EXPENSE_CATEGORIES
-    .map((c) => [c, sum(thisMonth.filter((e) => e.category === c), (e) => e.amount)])
-    .filter(([, v]) => v > 0)
-    .sort((a, b) => b[1] - a[1]);
-  const shown = expenses
-    .filter((e) => cat === "All" || e.category === cat)
-    .sort((a, b) => new Date(b.date) - new Date(a.date));
-
-  const exportCsv = () =>
-    downloadCsv(`expenses-${isoDay(new Date())}.csv`, [
-      ["Date", "Description", "Category", "Amount (KES)"],
-      ...shown.map((e) => [isoDay(e.date), e.description, e.category, e.amount]),
-    ]);
-
-  const remove = async (e) => {
-    if (!window.confirm(`Delete "${e.description}"?`)) return;
-    try {
-      await deleteExpense(e.id);
-    } catch (err) {
-      alert(err.message);
-    }
-  };
-
-  return (
-    <>
-      <div className="top">
-        <div>
-          <h1>Expenses</h1>
-          <p className="muted">Log rent, transport and other costs to see your true profit.</p>
-        </div>
-        <div className="actions">
-          <button className="btn out" disabled={shown.length === 0} onClick={exportCsv}>Export CSV</button>
-          <button className="btn" onClick={() => setForm({})}>+ Add expense</button>
-        </div>
-      </div>
-
-      <div className="kpis">
-        <div className="card"><span className="muted">Spent today</span><b>{kes(todayTotal)}</b></div>
-        <div className="card"><span className="muted">Spent this month</span><b>{kes(monthTotal)}</b></div>
-        <div className="card"><span className="muted">Entries this month</span><b>{thisMonth.length}</b></div>
-      </div>
-
-      <div className="two">
-        <div>
-          <div className="tabs">
-            {["All", ...EXPENSE_CATEGORIES].map((c) => (
-              <button key={c} className={c === cat ? "on" : ""} onClick={() => setCat(c)}>{c}</button>
-            ))}
-          </div>
-          <div className="card" style={{ overflowX: "auto" }}>
-            <table>
-              <thead><tr><th>DATE</th><th>DESCRIPTION</th><th>CATEGORY</th><th style={{ textAlign: "right" }}>AMOUNT</th><th></th></tr></thead>
-              <tbody>
-                {shown.map((e) => (
-                  <tr key={e.id}>
-                    <td className="muted">{fmtDate(e.date)}</td>
-                    <td><b>{e.description}</b></td>
-                    <td><span className="chip">{e.category}</span></td>
-                    <td style={{ textAlign: "right" }}><b>{kes(e.amount)}</b></td>
-                    <td className="actions">
-                      <button className="link" onClick={() => setForm(e)}>Edit</button>
-                      <button className="link red" onClick={() => remove(e)}>Delete</button>
-                    </td>
-                  </tr>
-                ))}
-                {shown.length === 0 && <tr><td colSpan="5" className="muted">No expenses yet.</td></tr>}
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        <div className="card" style={{ alignSelf: "start" }}>
-          <b>This month by category</b>
-          {byCat.length === 0 && <p className="muted" style={{ paddingTop: 12 }}>Nothing recorded this month.</p>}
-          {byCat.map(([c, v]) => (
-            <div key={c} style={{ marginTop: 14 }}>
-              <div className="row nb"><span>{c}</span><b>{kes(v)}</b></div>
-              <div className="meter" style={{ width: "100%" }}><i style={{ width: (v / monthTotal) * 100 + "%" }} /></div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {form && (
-        <ExpenseForm
-          expense={form.id ? form : null}
-          onSave={(e) => (e.id ? updateExpense(e) : addExpense(e))}
-          onClose={() => setForm(null)}
-        />
-      )}
-    </>
-  );
-}
+export default Expenses;

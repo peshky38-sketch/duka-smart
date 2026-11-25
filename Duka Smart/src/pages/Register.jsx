@@ -46,6 +46,8 @@ function Register() {
         phone_number: phone,
         business_address: address,
         currency: "KES",
+        // the backend insists on a logo; uploading one is not built yet
+        business_logo: "logo.svg",
       });
       await login(email, password);
       localStorage.setItem("duka_business", shopName);
