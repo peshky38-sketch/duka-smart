@@ -1,0 +1,16 @@
+sequenceDiagram
+  actor C as Cashier
+  participant UI as Sales page
+  participant API as FastAPI
+  participant DB as PostgreSQL
+  C->>UI: Tap or scan products
+  UI->>UI: Check quantity is not above stock
+  C->>UI: Choose payment, press Complete sale
+  UI->>API: POST /api/sales (JWT)
+  API->>DB: Begin transaction
+  API->>DB: Save sale and sale items
+  API->>DB: Reduce product stock
+  API->>DB: Commit
+  API-->>UI: Sale saved
+  UI->>API: GET /api/products
+  UI-->>C: Success message, new stock, low-stock alerts

@@ -43,6 +43,16 @@ These check the business rules: low-stock rule, profit formula, percentage chang
 | T26 | Responsive | Resize to phone width (F12, device toolbar) | No sideways scrolling, buttons reachable, tables scroll inside their card | | |
 | T27 | API errors | Stop the backend and refresh | Red banner shows, the app does not crash | | |
 | T28 | Token expiry | Delete the token in browser storage, then click a page (API mode) | Sent back to login | | |
+| T29 | Search | Type part of a product name in the top search box | Matching products appear, picking one opens Inventory | | |
+| T30 | Search | Type a sale number such as 1042, then a supplier name | Sale and supplier results open Transactions and Suppliers | | |
+| T31 | Not found | Open an address that does not exist, such as /abc | "Page not found" with a button back to the dashboard | | |
+| T32 | Expenses | Edit an expense amount, then delete another | The list and the monthly total update | | |
+| T33 | Camera scan | Product form: press the camera button and show a barcode (needs https or localhost) | The barcode fills in and the lookup runs | | |
+| T34 | Sales scan | Sales page: press Scan and show a barcode of a product you stock | The product is added to the sale | | |
+| T35 | M-Pesa | Choose M-Pesa, enter a number, send the prompt (demo: press Customer paid) | Sale saved with a receipt number, stock reduced | | |
+| T36 | M-Pesa | Choose M-Pesa, send the prompt (demo: press Customer cancelled) | Reason shown, Try again works, no sale is saved | | |
+| T37 | Notifications | Complete a sale, open the bell | New sale appears highlighted, badge goes up, Mark as read lowers it | | |
+| T38 | Logo link | Open any page, click the DukaSmart logo | Goes to the dashboard | | |
 
 ## Defects found
 

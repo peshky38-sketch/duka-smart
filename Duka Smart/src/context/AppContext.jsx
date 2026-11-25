@@ -3,6 +3,7 @@ import { PRODUCTS, SALES, EXPENSES } from "../data/mock";
 import { api, USE_API } from "../services/api";
 import { profileApi } from "../services/profile";
 import { supplierApi } from "../services/suppliers";
+import { expensesApi } from "../services/expenses";
 import { SUPPLIERS } from "../data/suppliers";
 import { sum } from "../utils";
 
@@ -179,13 +180,25 @@ export function AppProvider({ children }) {
     }
     setExpenses((l) => [{ ...e, id: Date.now() }, ...l]);
   };
+  const updateExpense = async (e) => {
+    if (USE_API) {
+      const saved = await expensesApi.update(e.id, e);
+      setExpenses((l) => l.map((x) => (x.id === saved.id ? saved : x)));
+      return;
+    }
+    setExpenses((l) => l.map((x) => (x.id === e.id ? { ...x, ...e } : x)));
+  };
+  const deleteExpense = async (id) => {
+    if (USE_API) await expensesApi.remove(id);
+    setExpenses((l) => l.filter((x) => x.id !== id));
+  };
 
   return (
     <Ctx.Provider value={{
       user, login, register, logout, updateProfile, changePassword, loading, error,
       products, saveProduct, deleteProduct,
       sales, completeSale,
-      expenses, addExpense,
+      expenses, addExpense, updateExpense, deleteExpense,
       suppliers, saveSupplier, deleteSupplier,
       alerts, readIds, isRead, unread, markRead, markAllRead,
     }}>

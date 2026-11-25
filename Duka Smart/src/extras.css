@@ -66,3 +66,8 @@ a.bell{color:inherit;font-size:18px}
 .notif.unread{background:var(--mist);border-left:4px solid var(--em)}
 .notif .ico{font-size:22px}
 .notif .grow{flex:1;min-width:180px}
+
+/* small phones: keep price and stock readable on product cards */
+@media(max-width:520px){
+  .prod .row.nb{flex-direction:column;align-items:flex-start;gap:2px}
+}

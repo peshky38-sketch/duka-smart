@@ -1,15 +1,15 @@
 import { useState } from "react";
 import { useApp } from "../context/AppContext.jsx";
 import { EXPENSE_CATEGORIES } from "../data/mock";
-import { kes, sum, sameDay, fmtDate } from "../utils";
+import { kes, sum, sameDay, fmtDate, downloadCsv, isoDay } from "../utils";
 
-function ExpenseForm({ onSave, onClose }) {
-  const [f, setF] = useState({
-    description: "",
-    category: "Transport",
-    amount: "",
-    date: new Date().toLocaleDateString("en-CA"), // YYYY-MM-DD in local time
-  });
+// Used for both Add and Edit. Pass `expense` to edit.
+function ExpenseForm({ expense, onSave, onClose }) {
+  const [f, setF] = useState(
+    expense
+      ? { description: expense.description, category: expense.category, amount: expense.amount, date: new Date(expense.date).toLocaleDateString("en-CA") }
+      : { description: "", category: "Transport", amount: "", date: new Date().toLocaleDateString("en-CA") } // YYYY-MM-DD in local time
+  );
   const [error, setError] = useState("");
   const set = (k) => (e) => setF({ ...f, [k]: e.target.value });
 
@@ -17,6 +17,7 @@ function ExpenseForm({ onSave, onClose }) {
     e.preventDefault();
     try {
       await onSave({
+        ...(expense ? { id: expense.id } : {}),
         description: f.description,
         category: f.category,
         amount: Number(f.amount),
@@ -31,7 +32,7 @@ function ExpenseForm({ onSave, onClose }) {
   return (
     <div className="overlay" onClick={onClose}>
       <form className="card modal" onClick={(e) => e.stopPropagation()} onSubmit={submit}>
-        <h2>Add expense</h2>
+        <h2>{expense ? "Edit expense" : "Add expense"}</h2>
         {error && <div className="banner">{error}</div>}
         <label>What was it for?<input required value={f.description} onChange={set("description")} placeholder="e.g. Transport to wholesaler" /></label>
         <label>Category
@@ -53,8 +54,8 @@ function ExpenseForm({ onSave, onClose }) {
 }
 
 export default function Expenses() {
-  const { expenses, addExpense } = useApp();
-  const [open, setOpen] = useState(false);
+  const { expenses, addExpense, updateExpense, deleteExpense } = useApp();
+  const [form, setForm] = useState(null); // null = closed, {} = add, expense = edit
   const [cat, setCat] = useState("All");
 
   const now = new Date();
@@ -72,6 +73,21 @@ export default function Expenses() {
     .filter((e) => cat === "All" || e.category === cat)
     .sort((a, b) => new Date(b.date) - new Date(a.date));
 
+  const exportCsv = () =>
+    downloadCsv(`expenses-${isoDay(new Date())}.csv`, [
+      ["Date", "Description", "Category", "Amount (KES)"],
+      ...shown.map((e) => [isoDay(e.date), e.description, e.category, e.amount]),
+    ]);
+
+  const remove = async (e) => {
+    if (!window.confirm(`Delete "${e.description}"?`)) return;
+    try {
+      await deleteExpense(e.id);
+    } catch (err) {
+      alert(err.message);
+    }
+  };
+
   return (
     <>
       <div className="top">
@@ -79,7 +95,10 @@ export default function Expenses() {
           <h1>Expenses</h1>
           <p className="muted">Log rent, transport and other costs to see your true profit.</p>
         </div>
-        <button className="btn" onClick={() => setOpen(true)}>+ Add expense</button>
+        <div className="actions">
+          <button className="btn out" disabled={shown.length === 0} onClick={exportCsv}>Export CSV</button>
+          <button className="btn" onClick={() => setForm({})}>+ Add expense</button>
+        </div>
       </div>
 
       <div className="kpis">
@@ -97,7 +116,7 @@ export default function Expenses() {
           </div>
           <div className="card" style={{ overflowX: "auto" }}>
             <table>
-              <thead><tr><th>DATE</th><th>DESCRIPTION</th><th>CATEGORY</th><th style={{ textAlign: "right" }}>AMOUNT</th></tr></thead>
+              <thead><tr><th>DATE</th><th>DESCRIPTION</th><th>CATEGORY</th><th style={{ textAlign: "right" }}>AMOUNT</th><th></th></tr></thead>
               <tbody>
                 {shown.map((e) => (
                   <tr key={e.id}>
@@ -105,9 +124,13 @@ export default function Expenses() {
                     <td><b>{e.description}</b></td>
                     <td><span className="chip">{e.category}</span></td>
                     <td style={{ textAlign: "right" }}><b>{kes(e.amount)}</b></td>
+                    <td className="actions">
+                      <button className="link" onClick={() => setForm(e)}>Edit</button>
+                      <button className="link red" onClick={() => remove(e)}>Delete</button>
+                    </td>
                   </tr>
                 ))}
-                {shown.length === 0 && <tr><td colSpan="4" className="muted">No expenses yet.</td></tr>}
+                {shown.length === 0 && <tr><td colSpan="5" className="muted">No expenses yet.</td></tr>}
               </tbody>
             </table>
           </div>
@@ -125,7 +148,13 @@ export default function Expenses() {
         </div>
       </div>
 
-      {open && <ExpenseForm onSave={addExpense} onClose={() => setOpen(false)} />}
+      {form && (
+        <ExpenseForm
+          expense={form.id ? form : null}
+          onSave={(e) => (e.id ? updateExpense(e) : addExpense(e))}
+          onClose={() => setForm(null)}
+        />
+      )}
     </>
   );
 }

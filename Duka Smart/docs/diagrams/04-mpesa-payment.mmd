@@ -1,0 +1,18 @@
+sequenceDiagram
+  actor C as Cashier
+  participant UI as Sales page
+  participant API as FastAPI
+  participant SF as Safaricom Daraja
+  actor P as Customer phone
+  C->>UI: Pick M-Pesa, enter customer number
+  UI->>API: POST /api/payments/mpesa/stk-push
+  API->>SF: STK Push request
+  SF->>P: Payment prompt
+  P->>SF: Customer enters PIN
+  SF->>API: POST /api/payments/mpesa/callback
+  loop every 3 seconds
+    UI->>API: GET /api/payments/mpesa/status/id
+    API-->>UI: pending or success
+  end
+  UI->>API: POST /api/sales (payment confirmed)
+  UI-->>C: Sale completed with M-Pesa receipt

@@ -14,7 +14,7 @@ import Suppliers from "./pages/Suppliers.jsx";
 import Profile from "./pages/Profile.jsx";
 import Settings from "./pages/Settings.jsx";
 import Notifications from "./pages/Notifications.jsx";
-import Placeholder from "./pages/Placeholder.jsx";
+import NotFound from "./pages/NotFound.jsx";
 import "./extras.css";
 
 // Visitors who are not logged in land on the public home page
@@ -40,7 +40,7 @@ export default function App() {
         <Route path="notifications" element={<Notifications />} />
         <Route path="profile" element={<Profile />} />
         <Route path="settings" element={<Settings />} />
-        <Route path=":page" element={<Placeholder />} />
+        <Route path="*" element={<NotFound />} />
       </Route>
     </Routes>
   );

@@ -1,0 +1,18 @@
+flowchart TB
+  subgraph Pages
+    L[Landing, Login, Register]
+    D[Dashboard]
+    I[Inventory]
+    S[Sales]
+    E[Expenses]
+    T[Transactions]
+    R[Reports]
+    SU[Suppliers]
+    N[Notifications]
+    PR[Profile and Settings]
+  end
+  Pages --> CTX["AppContext<br/>shared state and actions"]
+  CTX --> MODE{VITE_USE_API}
+  MODE -- false --> MOCK["Mock data<br/>(demo mode)"]
+  MODE -- true --> API["services/api.js<br/>fetch + JWT"]
+  API --> BE["FastAPI backend"]

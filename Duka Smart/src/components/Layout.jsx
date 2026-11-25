@@ -3,14 +3,15 @@ import Logo from "./Logo.jsx";
 import { useApp, isLow, isOut } from "../context/AppContext.jsx";
 
 const LINKS = [
-  ["/",  "Dashboard"],
-  ["/sales",  "Sales"],
-  ["/inventory",  "Inventory"],
-  ["/transactions",  "Transactions"],
-  ["/expenses",  "Expenses"],
-  ["/reports",  "Reports"],
-  ["/suppliers",  "Suppliers"],
-  ["/settings",  "Settings"],
+  ["/", "🏠", "Dashboard"],
+  ["/sales", "🛒", "Sales"],
+  ["/inventory", "📦", "Inventory"],
+  ["/transactions", "📜", "Transactions"],
+  ["/expenses", "🧾", "Expenses"],
+  ["/reports", "📊", "Reports"],
+  ["/suppliers", "🚚", "Suppliers"],
+  ["/profile", "👤", "Profile"],
+  ["/settings", "⚙️", "Settings"],
 ];
 
 export default function Layout() {
@@ -20,7 +21,9 @@ export default function Layout() {
   return (
     <div className="app">
       <aside>
-        <Logo />
+        <Link to="/" title="Go to dashboard" style={{ padding: 0, display: "block", borderRadius: 0 }}>
+          <Logo />
+        </Link>
         {LINKS.map(([to, icon, label]) => (
           <NavLink key={to} to={to} end={to === "/"} className={({ isActive }) => (isActive ? "on" : "")}>
             {icon} {label}

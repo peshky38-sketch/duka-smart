@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useApp, isOut } from "../context/AppContext.jsx";
 import MpesaModal from "../components/MpesaModal.jsx";
+import BarcodeScanner from "../components/BarcodeScanner.jsx";
 
 const TABS = ["All", "Grocery", "Drinks", "Bakery", "Household"];
 
@@ -12,6 +13,7 @@ export default function Sales() {
   const [method, setMethod] = useState("M-Pesa");
   const [msg, setMsg] = useState(null);
   const [mpesaOpen, setMpesaOpen] = useState(false);
+  const [scanning, setScanning] = useState(false);
   const [paid, setPaid] = useState(null); // an M-Pesa payment that was received but not saved yet
 
   const shown = products.filter(
@@ -66,6 +68,16 @@ export default function Sales() {
     }
   };
 
+  // Camera scan: add the product with that barcode to the sale
+  const onScan = (code) => {
+    setScanning(false);
+    const hit = products.find((p) => p.barcode === code || p.sku === code);
+    if (!hit) return setMsg({ ok: false, text: `No product with barcode ${code}.` });
+    if (isOut(hit)) return setMsg({ ok: false, text: `${hit.name} is out of stock.` });
+    add(hit);
+    setMsg({ ok: true, text: `Added ${hit.name}.` });
+  };
+
   const complete = () => {
     if (!lines.length) return;
     if (method === "M-Pesa" && !paid) setMpesaOpen(true); // send the payment prompt first
@@ -85,7 +97,10 @@ export default function Sales() {
 
       <div className="pos">
         <div>
-          <input className="search" placeholder="Search or scan a product" value={search} onChange={(e) => setSearch(e.target.value)} onKeyDown={onSearchKey} />
+          <div className="inline">
+            <input className="search" placeholder="Search or scan a product" value={search} onChange={(e) => setSearch(e.target.value)} onKeyDown={onSearchKey} />
+            <button className="btn out" onClick={() => setScanning(true)} title="Scan with the camera">📷 Scan</button>
+          </div>
           <div className="tabs">
             {TABS.map((t) => (
               <button key={t} className={t === tab ? "on" : ""} onClick={() => setTab(t)}>{t}</button>
@@ -129,6 +144,8 @@ export default function Sales() {
           </small>
         </div>
       </div>
+
+      {scanning && <BarcodeScanner onClose={() => setScanning(false)} onDetected={onScan} />}
 
       {mpesaOpen && (
         <MpesaModal

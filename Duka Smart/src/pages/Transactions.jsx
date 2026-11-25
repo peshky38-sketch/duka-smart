@@ -1,6 +1,6 @@
 import { Fragment, useState } from "react";
 import { useApp } from "../context/AppContext.jsx";
-import { kes, sum, fmtDate, fmtTime } from "../utils";
+import { kes, sum, fmtDate, fmtTime, saleCost, downloadCsv, isoDay } from "../utils";
 
 const METHODS = ["All", "Cash", "M-Pesa", "Card"];
 
@@ -15,6 +15,22 @@ export default function Transactions() {
     .sort((a, b) => new Date(b.date) - new Date(a.date));
   const total = sum(shown, (s) => s.total);
 
+  // One row per sale, for Excel or Google Sheets. It exports what is on screen (the current filter).
+  const exportCsv = () =>
+    downloadCsv(`transactions-${isoDay(new Date())}.csv`, [
+      ["Sale number", "Date", "Time", "Payment method", "Items", "Total (KES)", "Cost of goods (KES)", "Profit (KES)"],
+      ...shown.map((s) => [
+        s.id,
+        isoDay(s.date),
+        fmtTime(s.date),
+        s.method,
+        s.items.map((i) => `${i.name} x${i.qty}`).join("; "),
+        s.total,
+        saleCost(s),
+        s.total - saleCost(s),
+      ]),
+    ]);
+
   return (
     <>
       <div className="top">
@@ -22,6 +38,7 @@ export default function Transactions() {
           <h1>Transactions</h1>
           <p className="muted">Every sale you have recorded. Tap a row to see what was sold.</p>
         </div>
+        <button className="btn out" onClick={exportCsv} disabled={shown.length === 0}>Export CSV</button>
       </div>
 
       <div className="kpis">
@@ -57,7 +74,10 @@ export default function Transactions() {
                     <td colSpan="5">
                       {s.items.map((i, n) => (
                         <div className="row" key={n}>
-                          <span>{i.emoji} {i.name} <small className="muted">· {i.qty} × KES {i.price}</small></span>
+                          <span>
+                            {i.emoji} {i.name} <small className="muted">· {i.qty} × KES {i.price}</small>
+                            {i.description && <><br /><small className="muted">{i.description}</small></>}
+                          </span>
                           <b>{kes(i.qty * i.price)}</b>
                         </div>
                       ))}

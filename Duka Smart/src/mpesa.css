@@ -6,3 +6,4 @@
 .mpesa .tiny{margin-top:14px;font-size:13px}
 .mpesa form label{text-align:left}
 @keyframes mpesa-pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.12)}}
+.mpesa .actions{justify-content:center}
