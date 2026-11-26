@@ -32,17 +32,17 @@ export default function BarcodeScanner({ onDetected, onClose }) {
 
   return (
     <div className="overlay" onClick={onClose}>
-      <div className="card modal" style={{ textAlign: "center" }} onClick={(e) => e.stopPropagation()}>
+      <div className="modal" style={{ textAlign: "center" }} onClick={(e) => e.stopPropagation()}>
         <h2>Scan a barcode</h2>
         {error ? (
-          <div className="banner">{error}</div>
+          <div className="auth-error">{error}</div>
         ) : (
           <>
             <video ref={video} playsInline muted style={{ width: "100%", borderRadius: 12, background: "#000", marginTop: 12 }} />
-            <p className="muted" style={{ marginTop: 10 }}>Hold the barcode steady in front of the camera.</p>
+            <p className="dash-sub" style={{ marginTop: 10 }}>Hold the barcode steady in front of the camera.</p>
           </>
         )}
-        <div className="actions"><button type="button" className="btn out" onClick={onClose}>Cancel</button></div>
+        <div className="modal-buttons"><button type="button" className="cancel-btn" onClick={onClose}>Cancel</button></div>
       </div>
     </div>
   );

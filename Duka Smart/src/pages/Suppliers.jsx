@@ -1,131 +1,128 @@
-import { useState } from "react";
-import { useApp, isLow, isOut } from "../context/AppContext.jsx";
-import { reorderMessage, whatsappLink } from "../whatsapp";
+import { useCallback, useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
+import TopNav from "../components/TopNav";
+import Status from "../components/Status";
+import { Icon } from "../components/Icons";
+import { useToast } from "../components/Toast";
+import { get, post } from "../api";
 
-function SupplierForm({ supplier, onSave, onClose }) {
-  const [f, setF] = useState(supplier || { name: "", phone: "", deliveryDays: 1, notes: "" });
+function Suppliers() {
+  const toast = useToast();
+  const [params] = useSearchParams();
+  const [list, setList] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const set = (k) => (e) => setF({ ...f, [k]: e.target.value });
+  const [search, setSearch] = useState(params.get("q") || "");
+  const [showForm, setShowForm] = useState(false);
+  const [form, setForm] = useState({ supplier_name: "", phone_number: "", email: "", address: "" });
+  const [formError, setFormError] = useState("");
+  const [saving, setSaving] = useState(false);
 
-  const submit = async (e) => {
-    e.preventDefault();
+  const load = useCallback(async () => {
     try {
-      await onSave({ ...f, deliveryDays: Number(f.deliveryDays) });
-      onClose();
-    } catch (err) {
-      setError(err.message);
+      const d = await get("/api/suppliers");
+      setList(d.suppliers || []);
+      setError("");
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => { load(); }, [load]);
+
+  async function save(e) {
+    e.preventDefault();
+    if (!form.supplier_name.trim()) {
+      setFormError("Please enter the supplier's name");
+      return;
+    }
+    setSaving(true);
+    setFormError("");
+    try {
+      await post("/api/suppliers", {
+        supplier_name: form.supplier_name.trim(),
+        phone_number: form.phone_number.trim(),
+        email: form.email.trim() || undefined,
+        address: form.address.trim(),
+      });
+      await load();
+      setShowForm(false);
+      setForm({ supplier_name: "", phone_number: "", email: "", address: "" });
+      toast("Supplier added");
+    } catch (err) {
+      setFormError(err.message);
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  const shown = list.filter((s) => (s.supplier_name + " " + (s.phone_number || "")).toLowerCase().includes(search.toLowerCase()));
+  const waLink = (phone) => "https://wa.me/" + String(phone || "").replace(/\D/g, "").replace(/^0/, "254");
 
   return (
-    <div className="overlay" onClick={onClose}>
-      <form className="card modal" onClick={(e) => e.stopPropagation()} onSubmit={submit}>
-        <h2>{supplier ? "Edit supplier" : "Add supplier"}</h2>
-        {error && <div className="banner">{error}</div>}
-        <label>Supplier name<input required value={f.name} onChange={set("name")} /></label>
-        <div className="two-col">
-          <label>Phone (WhatsApp)<input type="tel" required placeholder="07xx xxx xxx" value={f.phone} onChange={set("phone")} /></label>
-          <label>Delivers in (days)<input type="number" min="0" required value={f.deliveryDays} onChange={set("deliveryDays")} /></label>
+    <div className="dash">
+      <TopNav active="Suppliers" />
+      <main className="dash-main">
+        <div className="page-head">
+          <div>
+            <h1>Suppliers</h1>
+            <p>The people you buy your stock from.</p>
+          </div>
+          <div className="page-actions">
+            <button className="solid-btn" onClick={() => setShowForm(true)}><Icon name="plus" />Add supplier</button>
+          </div>
         </div>
-        <label>What they supply<input value={f.notes} onChange={set("notes")} placeholder="e.g. Unga, sugar, rice" /></label>
-        <div className="actions">
-          <button type="button" className="btn out" onClick={onClose}>Cancel</button>
-          <button className="btn">Save supplier</button>
+
+        <Status loading={loading} error={error} />
+
+        <div className="card2 inv-panel">
+          <div className="inv-bar">
+            <div className="sale-search" style={{ margin: 0, width: "100%", maxWidth: 380 }}>
+              <div className="box">
+                <Icon name="search" className="" />
+                <input placeholder="Search suppliers" value={search} onChange={(e) => setSearch(e.target.value)} aria-label="Search suppliers" />
+              </div>
+            </div>
+          </div>
+          <table className="inv-table sup-table">
+            <thead><tr><th>SUPPLIER</th><th className="hide-m">PHONE</th><th className="hide-m">ADDRESS</th><th></th></tr></thead>
+            <tbody>
+              {shown.map((s) => (
+                <tr key={s.id}>
+                  <td><div className="pcell"><span className="emoji-tile">🚚</span><div><b>{s.supplier_name}</b><small>{s.email || ""}</small></div></div></td>
+                  <td className="hide-m">{s.phone_number && !s.phone_number.startsWith("not given") ? s.phone_number : "-"}</td>
+                  <td className="hide-m">{s.address || "-"}</td>
+                  <td>{s.phone_number && !s.phone_number.startsWith("not given") && <a className="link-sm" href={waLink(s.phone_number)} target="_blank" rel="noreferrer">WhatsApp</a>}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          {!loading && shown.length === 0 && <p className="empty2">{list.length === 0 ? "No suppliers yet. Add one, or type a new supplier when adding a product." : "No suppliers match."}</p>}
         </div>
-      </form>
+      </main>
+
+      {showForm && (
+        <div className="overlay" onClick={() => setShowForm(false)}>
+          <form className="modal" onClick={(e) => e.stopPropagation()} onSubmit={save}>
+            <h2>Add supplier</h2>
+            <div className="form-grid">
+              <div className="full"><label>Supplier name</label><input value={form.supplier_name} onChange={(e) => setForm({ ...form, supplier_name: e.target.value })} /></div>
+              <div><label>Phone (optional)</label><input type="tel" value={form.phone_number} onChange={(e) => setForm({ ...form, phone_number: e.target.value })} /></div>
+              <div><label>Email (optional)</label><input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} /></div>
+              <div className="full"><label>Address (optional)</label><input value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} /></div>
+            </div>
+            {formError && <p className="auth-error">{formError}</p>}
+            <div className="modal-buttons">
+              <button type="button" className="cancel-btn" onClick={() => setShowForm(false)}>Cancel</button>
+              <button type="submit" className="add-btn" disabled={saving}>{saving ? "Saving..." : "Save supplier"}</button>
+            </div>
+          </form>
+        </div>
+      )}
     </div>
   );
 }
 
-export default function Suppliers() {
-  const { suppliers, saveSupplier, deleteSupplier, products, user } = useApp();
-  const [form, setForm] = useState(null); // null = closed, {} = add, supplier = edit
-  const [supId, setSupId] = useState("");
-  const [off, setOff] = useState({}); // products the owner unticked
-  const [qty, setQty] = useState({}); // quantities the owner changed
-  const [err, setErr] = useState("");
-
-  const needs = products.filter((p) => isLow(p) || isOut(p)).sort((a, b) => a.qty - b.qty);
-  const suggested = (p) => Math.max(p.minStock * 2 - p.qty, 1); // enough to get back above the reorder level
-  const amount = (p) => Number(qty[p.id] ?? suggested(p));
-  const chosen = needs.filter((p) => !off[p.id]);
-  const supplier = suppliers.find((s) => String(s.id) === String(supId)) || suppliers[0];
-
-  const send = () => {
-    if (!supplier || chosen.length === 0) return;
-    const text = reorderMessage(user.shop, supplier.name, chosen.map((p) => ({ name: p.name, qty: amount(p) })));
-    window.open(whatsappLink(supplier.phone, text), "_blank");
-  };
-
-  const remove = async (s) => {
-    if (!window.confirm(`Delete ${s.name}?`)) return;
-    try {
-      await deleteSupplier(s.id);
-    } catch (e) {
-      setErr(e.message);
-    }
-  };
-
-  return (
-    <>
-      <div className="top">
-        <div>
-          <h1>Suppliers</h1>
-          <p className="muted">Who you buy from, and a quick way to reorder what is running low.</p>
-        </div>
-        <button className="btn" onClick={() => setForm({})}>+ Add supplier</button>
-      </div>
-
-      {err && <div className="banner">{err}</div>}
-
-      <div className="sup-grid">
-        {suppliers.map((s) => (
-          <div className="card sup" key={s.id}>
-            <b>{s.name}</b>
-            <span className="muted">📞 {s.phone}</span>
-            <span className="muted">🚚 Delivers in {s.deliveryDays} day{s.deliveryDays === 1 ? "" : "s"}</span>
-            {s.notes && <span className="muted">{s.notes}</span>}
-            <div>
-              <button className="link" onClick={() => setForm(s)}>Edit</button>
-              <button className="link red" onClick={() => remove(s)}>Delete</button>
-            </div>
-          </div>
-        ))}
-        {suppliers.length === 0 && <p className="muted">No suppliers yet. Add your first one.</p>}
-      </div>
-
-      <div className="card" style={{ marginTop: 14 }}>
-        <div className="row">
-          <b>Reorder low-stock items</b>
-          <span className="chip low">{needs.length} items</span>
-        </div>
-        {needs.length === 0 && <p className="muted" style={{ paddingTop: 12 }}>Nothing to reorder. Everything is well stocked.</p>}
-        {needs.map((p) => (
-          <div className="rr" key={p.id}>
-            <input type="checkbox" checked={!off[p.id]} onChange={() => setOff({ ...off, [p.id]: !off[p.id] })} />
-            <span className="grow">{p.emoji} <b>{p.name}</b><br />
-              <small className="muted">{p.qty === 0 ? "Out of stock" : `${p.qty} left`} · reorder at {p.minStock}</small>
-            </span>
-            <input type="number" min="1" value={amount(p)} onChange={(e) => setQty({ ...qty, [p.id]: e.target.value })} />
-          </div>
-        ))}
-        {needs.length > 0 && (
-          <>
-            <label>Send to
-              <select value={supplier?.id ?? ""} onChange={(e) => setSupId(e.target.value)}>
-                {suppliers.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
-              </select>
-            </label>
-            <button className="btn" disabled={!supplier || chosen.length === 0} onClick={send}>
-              Send list on WhatsApp ({chosen.length})
-            </button>
-          </>
-        )}
-      </div>
-
-      {form && (
-        <SupplierForm supplier={form.id ? form : null} onSave={saveSupplier} onClose={() => setForm(null)} />
-      )}
-    </>
-  );
-}
+export default Suppliers;

@@ -15,9 +15,7 @@ export const fmtTime = (d) => new Date(d).toLocaleTimeString("en-KE", { hour: "2
 export const saleCost = (s) => sum(s.items, (i) => i.cost * i.qty); // cost of goods sold
 export const pctChange = (now, before) => (before ? Math.round(((now - before) / before) * 100) : null);
 
-// ---------- CSV export (opens in Excel / Google Sheets) ----------
-// Text that starts with = + - @ could run as a formula in a spreadsheet, so it gets a ' in front.
-// Real numbers are left alone, so a negative profit stays a number.
+
 const csvCell = (v) => {
   let s = typeof v === "number" ? String(v) : String(v ?? "");
   if (typeof v !== "number" && /^[=+\-@\t\r]/.test(s)) s = "'" + s;
@@ -37,5 +35,5 @@ export const downloadCsv = (filename, rows) => {
   URL.revokeObjectURL(url);
 };
 
-// 2026-11-24 in the user's own time zone (used in file names and the Date column)
+
 export const isoDay = (d) => new Date(d).toLocaleDateString("en-CA");

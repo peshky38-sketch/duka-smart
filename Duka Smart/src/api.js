@@ -10,16 +10,28 @@ export function isLoggedIn() {
 }
 
 export function getUser() {
+  const picture = localStorage.getItem("duka_avatar") || "";
   return {
     username: localStorage.getItem("duka_username") || "",
     business: localStorage.getItem("duka_business") || "",
+    // only a real uploaded image counts (older accounts hold a placeholder like "logo.svg")
+    picture: picture.startsWith("data:image/") ? picture : "",
   };
+}
+
+// keeps the name, shop name and picture in the browser so every page can show them
+export function rememberProfile(p) {
+  if (!p) return;
+  if (p.username) localStorage.setItem("duka_username", p.username);
+  if (p.business_name) localStorage.setItem("duka_business", p.business_name);
+  if (typeof p.picture === "string") localStorage.setItem("duka_avatar", p.picture);
 }
 
 export function logout() {
   localStorage.removeItem("duka_token");
   localStorage.removeItem("duka_username");
   localStorage.removeItem("duka_business");
+  localStorage.removeItem("duka_avatar");
 }
 
 async function request(path, options = {}) {
@@ -68,6 +80,13 @@ export async function login(email, password) {
   const data = await post("/api/login", { email, password });
   localStorage.setItem("duka_token", data.access_token);
   localStorage.setItem("duka_username", data.username || "");
+  if (data.business_name) localStorage.setItem("duka_business", data.business_name);
+  // load the picture and shop details; a login still works if this fails
+  try {
+    rememberProfile(await get("/api/profile"));
+  } catch {
+    // ignore
+  }
   return data;
 }
 
@@ -165,3 +184,17 @@ export async function ensureSupplier(name, suppliers) {
   const created = await post("/api/suppliers", { supplier_name: name.trim(), phone_number: "not given " + Date.now(), address: "" });
   return created.supplier.id;
 }
+
+// ----- profile and M-Pesa -----
+
+export const getProfile = () => get("/api/profile");
+
+export async function saveProfile(changes) {
+  const data = await put("/api/profile", changes);
+  rememberProfile(data);
+  return data;
+}
+
+// sends a payment prompt to the customer's phone; gives back an id to check later
+export const mpesaPush = (phone, amount) => post("/api/mpesa/stk-push", { phone, amount });
+export const mpesaStatus = (id) => get("/api/mpesa/status/" + encodeURIComponent(id));

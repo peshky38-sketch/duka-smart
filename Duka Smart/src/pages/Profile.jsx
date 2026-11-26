@@ -1,145 +1,200 @@
-import { useRef, useState } from "react";
-import { useApp } from "../context/AppContext.jsx";
-import "../profile.css";
+import { useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import TopNav from "../components/TopNav";
+import Footer from "../components/Footer";
+import PageSkeleton from "../components/PageSkeleton";
+import Status from "../components/Status";
+import { useToast } from "../components/Toast";
+import { useShop } from "../useShop";
+import { getUser, getProfile, logout, rememberProfile, saveProfile } from "../api";
+import { formatKES } from "../utils/formatMoney";
+import "./Dashboard.css";
+import "./Inventory.css";
+import "./Account.css";
 
-// Crops the picture to a square and shrinks it to 256x256 so it stays small (about 20 KB)
-const toAvatar = (file) =>
-  new Promise((resolve, reject) => {
-    const img = new Image();
+// shrinks the chosen photo to a small square so it is quick to save and load
+function shrinkPhoto(file) {
+  return new Promise((resolve, reject) => {
     const url = URL.createObjectURL(file);
+    const img = new Image();
     img.onload = () => {
       const size = 256;
       const side = Math.min(img.width, img.height);
       const canvas = document.createElement("canvas");
-      canvas.width = canvas.height = size;
+      canvas.width = size;
+      canvas.height = size;
       canvas.getContext("2d").drawImage(img, (img.width - side) / 2, (img.height - side) / 2, side, side, 0, 0, size, size);
       URL.revokeObjectURL(url);
       resolve(canvas.toDataURL("image/jpeg", 0.85));
     };
-    img.onerror = () => reject(new Error("That file is not a valid image."));
+    img.onerror = () => {
+      URL.revokeObjectURL(url);
+      reject(new Error("That file is not a picture"));
+    };
     img.src = url;
   });
+}
 
-export default function Profile() {
-  const { user, updateProfile, changePassword } = useApp();
+function Profile() {
+  const navigate = useNavigate();
+  const toast = useToast();
   const fileRef = useRef(null);
+  const { products, sales, expenses, loading, error } = useShop();
 
-  // ----- profile picture -----
-  const [photoMsg, setPhotoMsg] = useState(null);
+  const saved = getUser();
+  const [picture, setPicture] = useState(saved.picture);
+  const [form, setForm] = useState({ username: saved.username, business_name: saved.business, business_address: "", phone_number: "" });
+  const [info, setInfo] = useState({ email: "", currency: "" });
+  const [busy, setBusy] = useState(false);
+  const [formError, setFormError] = useState("");
 
-  const pickPhoto = async (e) => {
-    const file = e.target.files[0];
-    e.target.value = ""; // lets the same file be chosen again later
+  // fresh details from the server
+  useEffect(() => {
+    getProfile()
+      .then((p) => {
+        rememberProfile(p);
+        if (typeof p.picture === "string" && p.picture.startsWith("data:image/")) setPicture(p.picture);
+        setForm({ username: p.username || "", business_name: p.business_name || "", business_address: p.business_address || "", phone_number: p.phone_number || "" });
+        setInfo({ email: p.email || "", currency: p.currency || "" });
+      })
+      .catch(() => {});
+  }, []);
+
+  const initials = (form.username || "?").split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase();
+
+  async function choosePhoto(e) {
+    const file = e.target.files && e.target.files[0];
+    e.target.value = "";
     if (!file) return;
-    if (!file.type.startsWith("image/")) return setPhotoMsg({ ok: false, text: "Please choose an image file." });
-    if (file.size > 5 * 1024 * 1024) return setPhotoMsg({ ok: false, text: "That image is too large (maximum 5 MB)." });
+    setBusy(true);
     try {
-      await updateProfile({ avatar: await toAvatar(file) });
-      setPhotoMsg({ ok: true, text: "Photo updated." });
+      const data = await shrinkPhoto(file);
+      await saveProfile({ picture: data });
+      setPicture(data);
+      toast("Photo updated");
     } catch (err) {
-      setPhotoMsg({ ok: false, text: err.message });
+      toast(err.message, "error");
+    } finally {
+      setBusy(false);
     }
-  };
+  }
 
-  const removePhoto = async () => {
+  async function removePhoto() {
+    setBusy(true);
     try {
-      await updateProfile({ avatar: null });
-      setPhotoMsg({ ok: true, text: "Photo removed." });
+      await saveProfile({ picture: "" });
+      setPicture("");
+      toast("Photo removed");
     } catch (err) {
-      setPhotoMsg({ ok: false, text: err.message });
+      toast(err.message, "error");
+    } finally {
+      setBusy(false);
     }
-  };
+  }
 
-  // ----- personal details -----
-  const [f, setF] = useState({
-    name: user.name || "",
-    shop: user.shop || "",
-    phone: user.phone || "",
-    location: user.location || "",
-  });
-  const [msg, setMsg] = useState(null);
-  const set = (k) => (e) => setF({ ...f, [k]: e.target.value });
-
-  const saveDetails = async (e) => {
+  async function handleSave(e) {
     e.preventDefault();
-    try {
-      await updateProfile(f);
-      setMsg({ ok: true, text: "Profile updated." });
-    } catch (err) {
-      setMsg({ ok: false, text: err.message });
+    setFormError("");
+    if (!form.username.trim() || !form.business_name.trim()) {
+      setFormError("Please fill in your name and shop name");
+      return;
     }
-  };
-
-  // ----- password -----
-  const [pw, setPw] = useState({ current: "", next: "", confirm: "" });
-  const [pwMsg, setPwMsg] = useState(null);
-  const setP = (k) => (e) => setPw({ ...pw, [k]: e.target.value });
-
-  const savePassword = async (e) => {
-    e.preventDefault();
-    if (pw.next !== pw.confirm) return setPwMsg({ ok: false, text: "The new passwords do not match." });
+    setBusy(true);
     try {
-      await changePassword(pw.current, pw.next);
-      setPw({ current: "", next: "", confirm: "" });
-      setPwMsg({ ok: true, text: "Password changed." });
+      const changes = { username: form.username, business_name: form.business_name };
+      if (form.business_address.trim()) changes.business_address = form.business_address;
+      if (form.phone_number.trim()) changes.phone_number = form.phone_number;
+      const data = await saveProfile(changes);
+      setForm({ username: data.username, business_name: data.business_name, business_address: data.business_address, phone_number: data.phone_number });
+      toast("Profile saved");
     } catch (err) {
-      setPwMsg({ ok: false, text: err.message });
+      setFormError(err.message);
+    } finally {
+      setBusy(false);
     }
-  };
+  }
 
-  const initials = (user.name || "?").split(" ").map((w) => w[0]).slice(0, 2).join("").toUpperCase();
+  function handleLogout() {
+    logout();
+    navigate("/login");
+  }
+
+  if (loading) return <PageSkeleton active="Dashboard" kind="list" />;
+
+  const revenue = sales.reduce((t, s) => t + s.total, 0);
+  const spent = expenses.reduce((t, x) => t + x.amount, 0);
 
   return (
-    <>
-      <div className="top">
-        <div>
-          <h1>Profile</h1>
-          <p className="muted">Your photo, details and password.</p>
-        </div>
-      </div>
-
-      <div className="profile">
-        <div className="card who">
-          <div className="avatar">{user.avatar ? <img src={user.avatar} alt="Your profile" /> : initials}</div>
+    <div className="dash">
+      <TopNav active="Profile" />
+      <main className="dash-main">
+        <div className="dash-top">
           <div>
-            <h2>{user.name}</h2>
-            <p className="muted">Owner · {user.shop}</p>
-            <p className="muted">{user.email}</p>
-            <div className="actions">
-              <button type="button" className="btn out" onClick={() => fileRef.current.click()}>
-                {user.avatar ? "Change photo" : "Upload photo"}
-              </button>
-              {user.avatar && <button type="button" className="btn out" onClick={removePhoto}>Remove</button>}
-            </div>
-            <input ref={fileRef} type="file" accept="image/*" style={{ display: "none" }} onChange={pickPhoto} />
-            {photoMsg && <div className={"banner" + (photoMsg.ok ? " ok" : "")}>{photoMsg.text}</div>}
+            <h1>My profile</h1>
+            <p className="dash-sub">Your account and shop details</p>
           </div>
         </div>
 
-        <form className="card" onSubmit={saveDetails}>
-          <b>Personal details</b>
-          {msg && <div className={"banner" + (msg.ok ? " ok" : "")}>{msg.text}</div>}
-          <label>Your name<input required value={f.name} onChange={set("name")} /></label>
-          <label>Shop name<input required value={f.shop} onChange={set("shop")} /></label>
-          <label>Email<input value={user.email || ""} disabled /></label>
-          <div className="two-col">
-            <label>Phone<input type="tel" placeholder="07xx xxx xxx" value={f.phone} onChange={set("phone")} /></label>
-            <label>Town or location<input placeholder="e.g. Eldoret" value={f.location} onChange={set("location")} /></label>
-          </div>
-          <button className="btn">Save changes</button>
-        </form>
+        <Status error={error} />
 
-        <form className="card" onSubmit={savePassword}>
-          <b>Change password</b>
-          {pwMsg && <div className={"banner" + (pwMsg.ok ? " ok" : "")}>{pwMsg.text}</div>}
-          <label>Current password<input type="password" required value={pw.current} onChange={setP("current")} /></label>
-          <div className="two-col">
-            <label>New password<input type="password" minLength="6" required value={pw.next} onChange={setP("next")} /></label>
-            <label>Confirm new password<input type="password" minLength="6" required value={pw.confirm} onChange={setP("confirm")} /></label>
+        <div className="panel profile-card">
+          <div className="profile-avatar">{picture ? <img src={picture} alt="Profile" /> : initials}</div>
+          <div className="profile-info">
+            <h2>{form.username || "Shop owner"}</h2>
+            <p>{form.business_name || "Shop name not set"}</p>
+            <div className="photo-actions">
+              <input ref={fileRef} type="file" accept="image/*" onChange={choosePhoto} hidden />
+              <button className="add-btn" onClick={() => fileRef.current.click()} disabled={busy}>{picture ? "Change photo" : "Add photo"}</button>
+              {picture && <button className="cancel-btn" onClick={removePhoto} disabled={busy}>Remove</button>}
+            </div>
           </div>
-          <button className="btn">Change password</button>
+          <button className="cancel-btn" onClick={handleLogout}>Log out</button>
+        </div>
+
+        <div className="stat-grid">
+          <div className="stat-card"><span className="stat-label">Products</span><span className="stat-value">{products.length}</span></div>
+          <div className="stat-card"><span className="stat-label">Sales made</span><span className="stat-value">{sales.length}</span></div>
+          <div className="stat-card"><span className="stat-label">Total sales</span><span className="stat-value">{formatKES(revenue)}</span></div>
+          <div className="stat-card"><span className="stat-label">Total spent</span><span className="stat-value">{formatKES(spent)}</span></div>
+        </div>
+
+        <form className="panel profile-details" onSubmit={handleSave}>
+          <h2>Account details</h2>
+          <div className="profile-fields">
+            <div>
+              <label htmlFor="pf-name">Your name</label>
+              <input id="pf-name" value={form.username} onChange={(e) => setForm({ ...form, username: e.target.value })} />
+            </div>
+            <div>
+              <label htmlFor="pf-shop">Shop name</label>
+              <input id="pf-shop" value={form.business_name} onChange={(e) => setForm({ ...form, business_name: e.target.value })} />
+            </div>
+            <div>
+              <label htmlFor="pf-addr">Shop address</label>
+              <input id="pf-addr" value={form.business_address} onChange={(e) => setForm({ ...form, business_address: e.target.value })} />
+            </div>
+            <div>
+              <label htmlFor="pf-phone">Shop phone</label>
+              <input id="pf-phone" value={form.phone_number} onChange={(e) => setForm({ ...form, phone_number: e.target.value })} />
+            </div>
+            <div>
+              <label>Email</label>
+              <input value={info.email} disabled />
+            </div>
+            <div>
+              <label>Currency</label>
+              <input value={info.currency || "KES"} disabled />
+            </div>
+          </div>
+          {formError && <p className="auth-error">{formError}</p>}
+          <div className="modal-buttons">
+            <button type="submit" className="add-btn" disabled={busy}>{busy ? "Saving..." : "Save changes"}</button>
+          </div>
         </form>
-      </div>
-    </>
+      </main>
+      <Footer />
+    </div>
   );
 }
+
+export default Profile;

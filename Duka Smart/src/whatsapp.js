@@ -1,4 +1,4 @@
-// Turns a Kenyan phone number into the format WhatsApp links need (254712345678)
+
 export const toWhatsAppNumber = (phone = "") => {
   let d = phone.replace(/\D/g, "");
   if (d.startsWith("0")) d = "254" + d.slice(1);

@@ -1,10 +1,4 @@
-// Acceptance test: drives the real frontend in a browser against the real backend.
-// Run it after the backend or frontend changes. It registers a fresh account every time, so it can be repeated.
-//
-//   npm i -D playwright && npx playwright install chromium     (once)
-//   FRONTEND_URL=http://localhost:5173 API_URL=http://localhost:5000 node e2e/flask.e2e.cjs
-//
-// Start the backend and `npm run dev` (with VITE_USE_API=true) first.
+
 const { chromium } = require(process.env.PLAYWRIGHT_PATH || "playwright");
 const fs = require("fs");
 

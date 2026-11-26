@@ -1,0 +1,531 @@
+/* Dark mode. Generated from the light styles: every light colour is swapped for a dark one.
+   It only applies when <html data-theme="dark"> is set (see theme.js). Loaded last in main.jsx. */
+html[data-theme="dark"] {
+  color-scheme: dark;
+  --ink: #e6f2ec;
+  --mute: #9bb8ad;
+  --line: #2c4037;
+  --glass: rgba(24, 38, 31, 0.8);
+  --glass-line: rgba(255, 255, 255, 0.08);
+}
+html[data-theme="dark"] body { background: #0f1a15; color: #e6f2ec; }
+html[data-theme="dark"] input,
+html[data-theme="dark"] select,
+html[data-theme="dark"] textarea { background: #18261f !important; color: #e6f2ec !important; border-color: #2c4037 !important; }
+html[data-theme="dark"] input::placeholder,
+html[data-theme="dark"] textarea::placeholder { color: #7f9a8f; }
+html[data-theme="dark"] input:disabled { background: #1f322a !important; color: #7f9a8f !important; }
+html[data-theme="dark"] .overlay { background: rgba(0, 0, 0, 0.55) !important; }
+html[data-theme="dark"] .modal,
+html[data-theme="dark"] .toast { box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5) !important; }
+html[data-theme="dark"] tbody tr:hover { background: #1f322a !important; }
+html[data-theme="dark"] td { border-bottom-color: #263830 !important; }
+html[data-theme="dark"] .dd-list { background: rgba(24, 38, 31, 0.97) !important; border: 1px solid #2c4037 !important; box-shadow: 0 14px 36px rgba(0, 0, 0, 0.5) !important; }
+html[data-theme="dark"] .dd-list li { color: #e6f2ec !important; }
+html[data-theme="dark"] .dd-list li.act,
+html[data-theme="dark"] .dd-list li:hover { background: #24392f !important; }
+html[data-theme="dark"] .dd-list li.new { color: #5fd1a1 !important; }
+html[data-theme="dark"] .qty button:hover { background: #24392f !important; }
+html[data-theme="dark"] .quick button.on { background: #12805c !important; color: #fff !important; border-color: #12805c !important; }
+html[data-theme="dark"] input[type="date"] { color-scheme: dark; }
+
+/* components/AuthShell.css */
+html[data-theme="dark"] .au-page {
+  background: repeating-linear-gradient(90deg, rgba(11, 61, 46, 0.03) 0 2px, transparent 2px 120px),
+    linear-gradient(180deg, #101c17 0%, #12201a 55%, #0f1a15 100%) !important;
+}
+html[data-theme="dark"] .au-sign .board {
+  background: #18261f !important;
+}
+html[data-theme="dark"] .au-box {
+  background: #18261f !important;
+}
+html[data-theme="dark"] .au-foot {
+  color: #d6c49b !important;
+}
+html[data-theme="dark"] .au-field input,
+html[data-theme="dark"] .au-field .dd-btn {
+  border: 1px solid #34493f !important;
+  background: #18261f !important;
+}
+html[data-theme="dark"] .au-field input::placeholder {
+  color: #7f9a8f !important;
+}
+html[data-theme="dark"] .au-pass button:hover {
+  background: #1a2c1f !important;
+}
+html[data-theme="dark"] .au-error {
+  background: #2a1c19 !important;
+  border: 1px solid #59423b !important;
+}
+html[data-theme="dark"] .au-spin {
+  border-top-color: #2c4037 !important;
+}
+html[data-theme="dark"] .au-alt {
+  border: 1px solid #34493f !important;
+}
+html[data-theme="dark"] .au-alt:hover {
+  background: #18291f !important;
+}
+
+/* components/Select.css */
+html[data-theme="dark"] .dd-btn,
+html[data-theme="dark"] .dd.combo input {
+  background: #18261f !important;
+}
+html[data-theme="dark"] .dd-btn:hover {
+  border-color: #446654 !important;
+}
+html[data-theme="dark"] .dd-placeholder {
+  color: #7f9a8f !important;
+}
+html[data-theme="dark"] .dd-list {
+  background: rgba(24, 38, 31, 0.92) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+html[data-theme="dark"] .dd-list li.act,
+html[data-theme="dark"] .dd-list li:hover {
+  background: #1c2f25 !important;
+}
+
+/* components/Skeleton.css */
+html[data-theme="dark"] .sk {
+  background: linear-gradient(90deg, #2a3d34 25%, #302b1d 37%, #2a3d34 63%) !important;
+}
+html[data-theme="dark"] .sk-kpi.first {
+  background: #2a4a3c !important;
+  border-color: #2c4037 !important;
+}
+html[data-theme="dark"] .sk-kpi.first .sk {
+  background: linear-gradient(90deg, #2a4a3c 25%, #243c2d 37%, #2a4a3c 63%) !important;
+}
+
+/* components/TopNav.css */
+html[data-theme="dark"] .tn-avatar {
+  border: 2px solid rgba(255, 255, 255, 0.08) !important;
+  background: #2f6b53 !important;
+  color: #e6f2ec !important;
+}
+html[data-theme="dark"] .tn-avatar.big {
+  border-color: #2c4037 !important;
+}
+html[data-theme="dark"] .tn-card {
+  background: rgba(24, 38, 31, 0.94) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+html[data-theme="dark"] .tn-row {
+  border-bottom: 1px solid #263830 !important;
+}
+html[data-theme="dark"] .tn-row b.low {
+  background: #3d3115 !important;
+}
+html[data-theme="dark"] .tn-row b.out {
+  background: #3d1f19 !important;
+  color: #ff9d86 !important;
+}
+html[data-theme="dark"] .tn-more {
+  background: #1f3a2f !important;
+}
+html[data-theme="dark"] .tn-more:hover {
+  background: #274131 !important;
+}
+html[data-theme="dark"] .tn-me {
+  border-bottom: 1px solid #263830 !important;
+}
+html[data-theme="dark"] .tn-out {
+  color: #ff9d86 !important;
+}
+html[data-theme="dark"] .tn-out:hover {
+  background: #3d1f19 !important;
+}
+@media (max-width: 900px) {
+html[data-theme="dark"] .tabbar {
+  background: rgba(24, 38, 31, 0.96) !important;
+}
+html[data-theme="dark"] .sell-btn {
+  border: 4px solid #2c4037 !important;
+}
+html[data-theme="dark"] .more-sheet {
+  background: #18261f !important;
+}
+html[data-theme="dark"] .more-sheet a {
+  border-bottom: 1px solid #263830 !important;
+}
+html[data-theme="dark"] .more-sheet a:last-child {
+  color: #ff9d86 !important;
+}
+}
+
+/* pages/Account.css */
+html[data-theme="dark"] .profile-avatar {
+  background: #2f6b53 !important;
+}
+html[data-theme="dark"] .profile-fields input {
+  background: #18261f !important;
+}
+html[data-theme="dark"] .profile-fields input:disabled {
+  background: #22352d !important;
+}
+html[data-theme="dark"] .mpesa-spin {
+  border: 4px solid #3a5648 !important;
+}
+html[data-theme="dark"] .theme-preview.light {
+  background: #352f20 !important;
+}
+html[data-theme="dark"] .theme-preview.light i:not(:first-child) {
+  background: #18261f !important;
+}
+html[data-theme="dark"] .theme-preview.system {
+  background: linear-gradient(110deg, #352f20 50%, #0f1a15 50%) !important;
+}
+
+/* pages/Dashboard.css */
+html[data-theme="dark"] .dash {
+  color: #e6f2ec !important;
+  background: #13201a !important;
+}
+html[data-theme="dark"] .dash-sub {
+  color: #9bb8ad !important;
+}
+html[data-theme="dark"] .dash-user span {
+  color: #9bb8ad !important;
+}
+html[data-theme="dark"] .avatar {
+  background: #2f6b53 !important;
+}
+html[data-theme="dark"] .stat-card {
+  background: #18261f !important;
+}
+html[data-theme="dark"] .stat-label {
+  color: #9bb8ad !important;
+}
+html[data-theme="dark"] .panel {
+  background: #18261f !important;
+}
+html[data-theme="dark"] .alert-item {
+  border-bottom: 1px solid #2c4037 !important;
+}
+html[data-theme="dark"] .alert-item div span {
+  color: #9bb8ad !important;
+}
+html[data-theme="dark"] .tag-low {
+  background: #3d3115 !important;
+}
+html[data-theme="dark"] .tag-out {
+  background: #3d1f19 !important;
+  color: #ff9d86 !important;
+}
+html[data-theme="dark"] th {
+  color: #9bb8ad !important;
+  border-bottom: 1px solid #2c4037 !important;
+}
+html[data-theme="dark"] td {
+  border-bottom: 1px solid #2c4037 !important;
+}
+html[data-theme="dark"] .legend {
+  color: #9bb8ad !important;
+}
+html[data-theme="dark"] .chart {
+  border-bottom: 1px solid #2c4037 !important;
+}
+html[data-theme="dark"] .chart-label {
+  color: #9bb8ad !important;
+}
+html[data-theme="dark"] .chart-note {
+  color: #9bb8ad !important;
+}
+
+/* pages/DashboardGlass.css */
+html[data-theme="dark"] .wk-col span {
+  background: #2a4636 !important;
+}
+html[data-theme="dark"] .bs-rank {
+  background: #1f3a2f !important;
+}
+html[data-theme="dark"] .bs-bar {
+  background: #1e2a1e !important;
+}
+html[data-theme="dark"] .g-stock {
+  border-bottom: 1px solid #263830 !important;
+}
+html[data-theme="dark"] .g-meter {
+  background: #203024 !important;
+}
+html[data-theme="dark"] .g-sale {
+  border-bottom: 1px solid #263830 !important;
+}
+html[data-theme="dark"] .shop .dash-top h1 {
+  color: #e6f2ec !important;
+}
+html[data-theme="dark"] .shop .dash-sub {
+  color: #d6c49b !important;
+}
+html[data-theme="dark"] .shop .g-sentence {
+  color: #e4ded4 !important;
+}
+html[data-theme="dark"] .shop .panel:not(.chalk):not(.paper) {
+  background: #18261f !important;
+}
+html[data-theme="dark"] .chalk .g-meter i.low {
+  background: #8a6a1c !important;
+}
+html[data-theme="dark"] .shop .panel.paper {
+  background: #1b2b24 !important;
+}
+html[data-theme="dark"] .paper::after {
+  background: linear-gradient(-45deg, transparent 8px, #1b2b24 0) 0 0 / 16px 14px, linear-gradient(45deg, transparent 8px, #1b2b24 0) 0 0 / 16px 14px !important;
+}
+
+/* pages/Expenses.css */
+html[data-theme="dark"] .note {
+  color: #9bb8ad !important;
+}
+html[data-theme="dark"] .expense-fields input,
+html[data-theme="dark"] .expense-fields select,
+html[data-theme="dark"] .filter-row select {
+  border: 1px solid #2c4037 !important;
+  background: #18261f !important;
+}
+html[data-theme="dark"] .form-error {
+  background: #3d1f19 !important;
+  color: #ff9d86 !important;
+}
+html[data-theme="dark"] .row-actions button {
+  color: #ff9d86 !important;
+}
+html[data-theme="dark"] .empty {
+  color: #9bb8ad !important;
+}
+
+/* pages/Inventory.css */
+html[data-theme="dark"] .sku {
+  color: #9bb8ad !important;
+}
+html[data-theme="dark"] .tag-in {
+  background: #1f4535 !important;
+  color: #5fd1a1 !important;
+}
+html[data-theme="dark"] .toolbar input,
+html[data-theme="dark"] .toolbar select {
+  border: 1px solid #2c4037 !important;
+  background: #18261f !important;
+}
+html[data-theme="dark"] .empty {
+  color: #9bb8ad !important;
+}
+html[data-theme="dark"] .row-actions button.danger {
+  color: #ff9d86 !important;
+}
+html[data-theme="dark"] .modal {
+  background: #18261f !important;
+  color: #e6f2ec !important;
+}
+html[data-theme="dark"] .form-grid input,
+html[data-theme="dark"] .form-grid select {
+  border: 1px solid #2c4037 !important;
+  background: #18261f !important;
+}
+html[data-theme="dark"] .modal .auth-error {
+  background: #3d1f19 !important;
+  color: #ff9d86 !important;
+}
+html[data-theme="dark"] .cancel-btn {
+  background: #18261f !important;
+  border: 1px solid #2c4037 !important;
+}
+
+/* pages/Reports.css */
+html[data-theme="dark"] .period-tabs button {
+  border: 1px solid #2c4037 !important;
+  background: #18261f !important;
+  color: #e6f2ec !important;
+}
+html[data-theme="dark"] .stat-note {
+  color: #9bb8ad !important;
+}
+html[data-theme="dark"] .profit {
+  color: #5fd1a1 !important;
+}
+html[data-theme="dark"] .loss {
+  color: #ff9d86 !important;
+}
+html[data-theme="dark"] .rank-number {
+  background: #1f4535 !important;
+  color: #5fd1a1 !important;
+}
+html[data-theme="dark"] .rank-top span {
+  color: #9bb8ad !important;
+}
+html[data-theme="dark"] .rank-track {
+  background: #1f3a2f !important;
+}
+html[data-theme="dark"] .donut-hole {
+  background: #18261f !important;
+  color: #9bb8ad !important;
+}
+html[data-theme="dark"] .donut-hole strong {
+  color: #e6f2ec !important;
+}
+html[data-theme="dark"] .pay-legend {
+  color: #ccdcd7 !important;
+}
+html[data-theme="dark"] .print-btn {
+  background: #18261f !important;
+}
+html[data-theme="dark"] .print-btn:hover {
+  background: #1f4535 !important;
+}
+@media print {
+html[data-theme="dark"] .dash {
+  background: #18261f !important;
+}
+html[data-theme="dark"] .panel,
+html[data-theme="dark"] .stat-card {
+  border: 1px solid #2c4037 !important;
+}
+}
+
+/* pages/Sales.css */
+html[data-theme="dark"] .t-search {
+  background: #18261f !important;
+}
+html[data-theme="dark"] .chip {
+  background: #18261f !important;
+}
+html[data-theme="dark"] .tile {
+  background: #18261f !important;
+}
+html[data-theme="dark"] .cart {
+  background: #18261f !important;
+}
+html[data-theme="dark"] .qty button {
+  background: #18261f !important;
+}
+html[data-theme="dark"] .seg button.on {
+  background: #18261f !important;
+}
+html[data-theme="dark"] .pay-opt {
+  background: #18261f !important;
+}
+html[data-theme="dark"] .pay-opt.on {
+  background: #18281e !important;
+}
+html[data-theme="dark"] .r-pay {
+  background: #18261f !important;
+}
+html[data-theme="dark"] .quick button {
+  background: #18261f !important;
+}
+html[data-theme="dark"] .cash input {
+  background: #18261f !important;
+}
+html[data-theme="dark"] .charge:disabled {
+  background: #4b432d !important;
+}
+@media (max-width: 900px) {
+html[data-theme="dark"] .cart {
+  background: rgba(24, 38, 31, 0.92) !important;
+}
+}
+
+/* pages/Transactions.css */
+html[data-theme="dark"] .time {
+  color: #9bb8ad !important;
+}
+html[data-theme="dark"] .tag-in {
+  background: #1f4535 !important;
+  color: #5fd1a1 !important;
+}
+html[data-theme="dark"] .money-in {
+  color: #5fd1a1 !important;
+}
+html[data-theme="dark"] .money-out {
+  color: #ff9d86 !important;
+}
+html[data-theme="dark"] .type-tabs button {
+  border: 1px solid #2c4037 !important;
+  background: #18261f !important;
+  color: #e6f2ec !important;
+}
+html[data-theme="dark"] .filters input,
+html[data-theme="dark"] .filters select {
+  border: 1px solid #2c4037 !important;
+  background: #18261f !important;
+}
+html[data-theme="dark"] .date-filter label {
+  color: #9bb8ad !important;
+}
+html[data-theme="dark"] .empty {
+  color: #9bb8ad !important;
+}
+html[data-theme="dark"] .csv-btn {
+  background: #18261f !important;
+}
+html[data-theme="dark"] .csv-btn:hover {
+  background: #1f4535 !important;
+}
+html[data-theme="dark"] tr.clickable:hover {
+  background: #13201a !important;
+}
+html[data-theme="dark"] .details-row td {
+  background: #13201a !important;
+}
+html[data-theme="dark"] .pagination {
+  color: #9bb8ad !important;
+}
+html[data-theme="dark"] .pagination button {
+  border: 1px solid #2c4037 !important;
+  background: #18261f !important;
+  color: #e6f2ec !important;
+}
+
+/* theme.css */
+html[data-theme="dark"] body {
+  background: #0f1a15 !important;
+}
+html[data-theme="dark"] .dash {
+  background: repeating-linear-gradient(90deg, rgba(106, 74, 42, 0.045) 0 2px, transparent 2px 120px),
+    linear-gradient(180deg, #101c17 0%, #12201a 55%, #0f1a15 100%) !important;
+}
+html[data-theme="dark"] .stat-card,
+html[data-theme="dark"] .panel,
+html[data-theme="dark"] .chart-panel,
+html[data-theme="dark"] .expense-form,
+html[data-theme="dark"] .filters,
+html[data-theme="dark"] .toolbar {
+  background: #18261f !important;
+}
+html[data-theme="dark"] .kpi {
+  background: #18261f !important;
+}
+html[data-theme="dark"] td {
+  border-bottom: 1px solid #263830 !important;
+}
+html[data-theme="dark"] tbody tr:hover {
+  background: #1f322a !important;
+}
+html[data-theme="dark"] input[type="text"],
+html[data-theme="dark"] input[type="number"],
+html[data-theme="dark"] input[type="email"],
+html[data-theme="dark"] input[type="password"],
+html[data-theme="dark"] input[type="tel"],
+html[data-theme="dark"] input[type="date"],
+html[data-theme="dark"] input:not([type]),
+html[data-theme="dark"] select,
+html[data-theme="dark"] textarea {
+  background: #18261f !important;
+}
+@media (max-width: 900px) {
+html[data-theme="dark"] .stack tr {
+  background: #18261f !important;
+}
+html[data-theme="dark"] .stack tbody tr:hover {
+  background: #18261f !important;
+}
+html[data-theme="dark"] .stack td:first-child {
+  border-bottom: 1px solid #263830 !important;
+}
+html[data-theme="dark"] .stack td[data-label=""] {
+  border-top: 1px solid #263830 !important;
+}
+}
