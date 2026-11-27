@@ -30,7 +30,7 @@ const ok = (c, m) => { console.log((c ? "PASS " : "FAIL ") + m); if (!c) process
   const token = await page.evaluate(() => localStorage.getItem("token"));
   const api = async (path) => (await fetch(API + path, { headers: { Authorization: "Bearer " + token } })).json();
 
-  // ---- a product needs a real supplier: nothing is invented ----
+  // -- a product real supplier
   await page.goto(BASE + "/inventory");
   await page.click('button:has-text("+ Add product")');
   await page.waitForSelector("text=Add a supplier first");
