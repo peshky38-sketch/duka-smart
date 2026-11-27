@@ -9,7 +9,9 @@ class User(db.Model):
     username = db.Column(db.String, unique = True, nullable = False)
     email = db.Column(db.String, unique = True, nullable = False)
     password_hash = db.Column(db.String, nullable=False)
+    profile_picture =db.Column(db.Text, nullable=True)
     business_id = db.Column (db.Integer, db.ForeignKey("businesses.id"), unique=True, nullable=False)
     business = relationship("Business", back_populates="user")
+    
 
 

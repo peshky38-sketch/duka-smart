@@ -40,6 +40,8 @@ def create_app():
     app.register_blueprint(dashboard)
     from app.routes.reports import reports
     app.register_blueprint(reports)
+    from app.routes.mpesa import mpesa
+    app.register_blueprint(mpesa)
 
     CORS(
         app,

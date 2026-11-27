@@ -7,3 +7,4 @@ from app.models.product import Product
 from app.models.expense import Expense
 from app.models.category import Category
 from app.models.business import Business
+from app.models.mpesa_payment import MpesaPayment

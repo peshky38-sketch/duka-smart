@@ -15,7 +15,6 @@ suppliers = Blueprint("suppliers", __name__)
 def create_supplier():
 
     user_id = get_jwt_identity()
-
     user = db.session.get(User, user_id)
 
     if not user:
@@ -35,18 +34,29 @@ def create_supplier():
     email = data.get("email")
     address = data.get("address")
 
-    if not isinstance(supplier_name, str) or not isinstance(phone_number, str):
+    if not isinstance(supplier_name, str):
         return jsonify({
-            "error": "Supplier name and phone number must be text"
+            "error": "Supplier name must be text"
         }), 400
 
     supplier_name = supplier_name.strip()
-    phone_number = phone_number.strip()
 
-    if supplier_name == "" or phone_number == "":
+    if supplier_name == "":
         return jsonify({
-            "error": "Supplier name and phone number are required"
+            "error": "Supplier name is required"
         }), 400
+
+    if phone_number is not None and not isinstance(phone_number, str):
+        return jsonify({
+            "error": "Phone number must be text"
+        }), 400
+
+    if phone_number is not None:
+        phone_number = phone_number.strip()
+
+    # Leave the phone number empty when the supplier has not provided one.
+    if not phone_number:
+        phone_number = None
 
     if email is not None and not isinstance(email, str):
         return jsonify({
@@ -64,19 +74,26 @@ def create_supplier():
     if address is not None:
         address = address.strip()
 
-        existing_supplier = Supplier.query.filter(
-        Supplier.business_id == user.business_id,
-        or_(
-            func.lower(Supplier.supplier_name) == supplier_name.lower(),
+    same = (
+        func.lower(Supplier.supplier_name) == supplier_name.lower()
+    )
+
+    if phone_number is not None:
+        same = or_(
+            same,
             Supplier.phone_number == phone_number
         )
+
+    existing_supplier = Supplier.query.filter(
+        Supplier.business_id == user.business_id,
+        same
     ).first()
 
     if existing_supplier:
         return jsonify({
             "error": "A supplier with this name or phone number already exists"
         }), 409
-    
+
     new_supplier = Supplier(
         supplier_name=supplier_name,
         phone_number=phone_number,
@@ -105,7 +122,6 @@ def create_supplier():
 def get_suppliers():
 
     user_id = get_jwt_identity()
-
     user = db.session.get(User, user_id)
 
     if not user:
