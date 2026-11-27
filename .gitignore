@@ -1,5 +1,21 @@
-.DS_Store
-node_modules
-dist
-.env.local
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Virtual environments
+venv/
+
+# Node / React
+node_modules/
+dist/
+
+# Environment variables
 .env
+.env.local
+
+# Operating system
+.DS_Store
+
+# Local database files
+backend/instance/
