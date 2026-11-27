@@ -5,20 +5,17 @@ __pycache__/
 
 # Virtual environments
 venv/
-backend/venv/
+
+# Node / React
+node_modules/
+dist/
 
 # Environment variables
 .env
-**/.env
+.env.local
 
-# Database files
-*.db
-*.sqlite3
+# Operating system
+.DS_Store
 
-# Testing
-.pytest_cache/
-.coverage
-htmlcov/
-
-# IDE
-.vscode/
+# Local database files
+backend/instance/
