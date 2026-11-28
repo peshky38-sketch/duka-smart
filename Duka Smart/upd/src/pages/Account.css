@@ -1,0 +1,25 @@
+/* Notifications and Profile pages */
+.cat-hint { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 16px 20px; margin-bottom: 20px; flex-wrap: wrap; }
+.cat-hint span { color: var(--mute); flex: 1 1 260px; }
+
+.note-list { padding: 8px 0; }
+.note { display: flex; align-items: center; gap: 14px; padding: 14px 20px; border-bottom: 1px solid var(--line); }
+.note:last-child { border-bottom: 0; }
+.note-dot { width: 10px; height: 10px; border-radius: 50%; flex: none; background: var(--mute); }
+.note-out .note-dot { background: var(--red); }
+.note-low .note-dot { background: var(--amber); }
+.note-good .note-dot { background: var(--green); }
+.note-body { display: flex; flex-direction: column; flex: 1; gap: 2px; }
+.note-body span { color: var(--mute); font-size: 14px; }
+.note-link { color: var(--green); font-weight: 600; text-decoration: none; white-space: nowrap; }
+.note-link:hover { text-decoration: underline; }
+
+.profile-card { display: flex; align-items: center; gap: 20px; padding: 22px; margin-bottom: 20px; flex-wrap: wrap; }
+.profile-avatar { width: 64px; height: 64px; border-radius: 50%; background: #c9eedb; color: var(--ink); display: grid; place-items: center; font-weight: 700; font-size: 22px; flex: none; }
+.profile-info { flex: 1; min-width: 160px; }
+.profile-info h2 { margin: 0; font-size: 22px; }
+.profile-info p { margin: 4px 0 0; color: var(--mute); }
+.profile-details { padding: 20px 22px; margin-top: 20px; }
+.profile-details h2 { margin: 0 0 8px; }
+.detail-row { display: flex; justify-content: space-between; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--line); }
+.detail-row span { color: var(--mute); }

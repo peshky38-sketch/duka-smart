@@ -1,0 +1,8 @@
+flowchart LR
+  U["Shop owner<br/>phone or computer"] --> F["React frontend<br/>Vite, React Router, Chart.js"]
+  F -- "HTTP / JSON + JWT" --> B["FastAPI REST API"]
+  B --> O["SQLAlchemy ORM"] --> D[("PostgreSQL")]
+  B -- "STK Push request" --> S["Safaricom Daraja<br/>M-Pesa"]
+  S -- "payment callback" --> B
+  F -- "barcode lookup" --> OFF["Open Food Facts API"]
+  F -- "reorder message" --> W["WhatsApp"]

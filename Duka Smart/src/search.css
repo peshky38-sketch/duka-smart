@@ -1,0 +1,9 @@
+/* top bar search */
+.search-wrap{position:relative;flex:1;max-width:340px}
+.results{position:absolute;top:100%;left:0;right:0;margin-top:6px;min-width:280px;max-height:380px;overflow:auto;background:var(--card);border:1px solid var(--line);border-radius:12px;box-shadow:0 12px 30px rgba(0,0,0,.18);z-index:30}
+.results h4{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);padding:10px 14px 4px;margin:0}
+.res{display:flex;align-items:center;gap:10px;width:100%;text-align:left;padding:10px 14px;border:0;background:none}
+.res:hover,.res.on{background:var(--mist)}
+.res .ico{font-size:20px}
+.res small{display:block;color:var(--muted)}
+.results .none{padding:14px;color:var(--muted);font-size:14px}

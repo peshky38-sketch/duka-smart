@@ -1,0 +1,13 @@
+/* profile page + clickable user in the top bar */
+.profile{max-width:640px;display:grid;gap:14px}
+.who{display:flex;align-items:center;gap:16px}
+.who h2{font-size:22px}
+.avatar,.mini{display:grid;place-items:center;border-radius:50%;background:#3EB489;color:#0B3D2E;font-weight:800;flex-shrink:0;overflow:hidden}
+.avatar{width:84px;height:84px;font-size:30px}
+.mini{width:34px;height:34px;font-size:14px}
+.avatar img,.mini img{width:100%;height:100%;object-fit:cover}
+.me{display:flex;align-items:center;gap:10px;color:var(--ink)}
+input:disabled{opacity:.6;cursor:not-allowed}
+.profile .btn{margin-top:16px}
+.who .actions{margin-top:10px}
+.who .btn{margin-top:0;padding:8px 14px}
